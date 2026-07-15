@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS raw.tables (
 );
 
 COMMENT ON TABLE raw.tables IS
-  'One row per hand (a "table" on the heads-up ladder is a single hand: handCount=1) from arena.getTexasTables. Contains every seat''s hole cards, chip deltas and the result — ~95% of analytical value. Immutable: INSERT ... ON CONFLICT (table_id) DO NOTHING; re-seen hands are silent no-ops.';
+  'One row per hand (a "table" on the heads-up ladder is a single hand: handCount=1) from arena.getTexasTables. Contains every seat''s hole cards, chip deltas and the result — ~95% of analytical value. Immutable once SETTLED: re-seen settled hands are silent no-ops; the one carve-out is a hand first seen mid-play (payload.endedAt null), which is refreshed until it settles so replays/transforms only ever see completed hands.';
 COMMENT ON COLUMN raw.tables.table_id   IS 'Natural id (cuid), payload.id. Join key to raw.replays. NOTE: payload.tableNumber is a separate human-facing number; submissions reference it via challenge.uniqueId = "table-<tableNumber>".';
 COMMENT ON COLUMN raw.tables.arena_id   IS 'Arena/competition the hand belongs to (request parameter; also in replay payloads as competitionId).';
 COMMENT ON COLUMN raw.tables.played_at  IS 'payload.startedAt. Drives lag monitoring and incremental windows.';

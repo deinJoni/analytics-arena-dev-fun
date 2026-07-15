@@ -1,7 +1,7 @@
 # /etc/systemd/system/arena-etl.service
 # Adjust User/paths to the server. Pair with arena-etl.timer.
 [Unit]
-Description=Arena raw-data ingestion (dev.fun -> Postgres raw schema)
+Description=Arena pipeline: raw ingestion + analytics transform (dev.fun -> Postgres)
 Wants=network-online.target
 After=network-online.target docker.service
 
@@ -11,6 +11,11 @@ User=jonas
 WorkingDirectory=/opt/arena-etl
 # .env next to the script is read automatically; EnvironmentFile also works:
 #EnvironmentFile=/opt/arena-etl/.env
-ExecStart=/opt/arena-etl/.venv/bin/python /opt/arena-etl/arena_etl.py run
-# A full backfill can take a while; incremental runs finish in seconds.
+# Stage 1 (loader) then Stage 2 (transform). The '-' prefix lets the transform
+# still run when the loader had a partial failure (it processes whatever
+# landed); the transform's own exit code (QA violations = 1) drives the unit
+# status. Each is independently idempotent and resumable.
+ExecStart=-/opt/arena-etl/.venv/bin/python /opt/arena-etl/arena_etl.py run
+ExecStart=/opt/arena-etl/.venv/bin/python /opt/arena-etl/arena_transform.py run
+# A full backfill can take a while; incremental runs finish in seconds/minutes.
 TimeoutStartSec=6h

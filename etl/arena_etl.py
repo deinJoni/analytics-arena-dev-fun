@@ -271,11 +271,17 @@ class Db:
             return cur.rowcount
 
     def insert_table(self, arena_id: str, tbl: dict) -> int:
+        """Insert-once, with one carve-out: a hand first seen MID-PLAY (no
+        endedAt yet) is refreshed until it settles, so the replay-pass and the
+        transform only ever see completed hands. Settled rows stay immutable."""
         with self.conn.cursor() as cur:
             cur.execute("""
                 INSERT INTO raw.tables (table_id, arena_id, played_at, payload)
                 VALUES (%s, %s, %s, %s)
-                ON CONFLICT (table_id) DO NOTHING
+                ON CONFLICT (table_id) DO UPDATE SET
+                    played_at = EXCLUDED.played_at,
+                    payload = EXCLUDED.payload
+                WHERE raw.tables.payload ->> 'endedAt' IS NULL
             """, (tbl["id"], arena_id, parse_ts(tbl.get("startedAt")), Jsonb(tbl)))
             return cur.rowcount
 
@@ -295,6 +301,7 @@ class Db:
                 FROM raw.tables t
                 LEFT JOIN raw.replays r USING (table_id)
                 WHERE t.arena_id = %s AND r.table_id IS NULL
+                  AND t.payload ->> 'endedAt' IS NOT NULL  -- replays are immutable: only fetch settled hands
                   AND NOT (t.table_id = ANY(%s))
                 ORDER BY t.played_at DESC NULLS LAST
                 LIMIT %s

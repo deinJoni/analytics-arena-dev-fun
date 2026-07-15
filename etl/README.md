@@ -1,10 +1,19 @@
-# Arena raw ETL (Stage 1)
+# Arena ETL — raw ingestion (Stage 1) + analytics transform (Stage 2)
 
-Pulls every readable dev.fun Arena endpoint and lands the responses verbatim
-(JSONB) in Postgres. Idempotent, resumable, no orchestrator — one script.
+Two scripts, no orchestrator, both idempotent and resumable:
 
-- Requirements/decisions: [`PRD_raw.md`](PRD_raw.md)
-- Target DB documentation: [`SCHEMA.md`](SCHEMA.md) + [`schema.sql`](schema.sql)
+1. **`arena_etl.py`** pulls every readable dev.fun Arena endpoint and lands the
+   responses verbatim (JSONB) in the Postgres `raw` schema.
+2. **`arena_transform.py`** turns `raw` into typed analytics tables
+   (`stg` → `int` → `mart`) built around the ladder's **duplicate-poker mirror
+   pairs** — luck-cancelled skill metrics, all-in EV adjustment, leak buckets,
+   and a replayer feed for the app's five views. Card math lives in
+   [`holdem.py`](holdem.py).
+
+- Stage 1 requirements/decisions: [`PRD_raw.md`](PRD_raw.md) · DB docs:
+  [`SCHEMA.md`](SCHEMA.md) + [`schema.sql`](schema.sql)
+- Stage 2 requirements/decisions: [`PRD_analytics_etl.md`](PRD_analytics_etl.md)
+  · DB docs: [`ANALYTICS.md`](ANALYTICS.md) + [`schema_analytics.sql`](schema_analytics.sql)
 - Sample API payloads (captured 2026-07-15): [`samples/`](samples/)
 
 ## Discovery results (2026-07-15)
@@ -41,17 +50,21 @@ docker run -d --name arena-etl-pg -e POSTGRES_USER=arena \
 uv run arena_etl.py init-db
 uv run arena_etl.py run --max-pages 3 --max-replays 10   # capped smoke test
 uv run arena_etl.py status
+
+uv run arena_transform.py selftest                        # no DB needed
+uv run arena_transform.py run --limit 10                  # capped transform
+uv run arena_transform.py status
 ```
 
-`--max-pages` / `--max-replays` cap the walk for testing; without them `run`
-does the real thing.
+`--max-pages` / `--max-replays` / `--limit` cap the walks for testing; without
+them `run` does the real thing.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
 | `init-db` | apply `schema.sql` (idempotent; also auto-applied on every run) |
-| `run` | full pass: discover → leaderboard → tables → replays → submissions → stats, then a status report. **This is the cron entrypoint.** Exit code 1 if any stage failed. |
+| `run` | full pass: discover → leaderboard → tables → replays → submissions → stats, then a status report. Exit code 1 if any stage failed. |
 | `discover` / `leaderboard` / `tables` / `replays` / `submissions` / `stats` | run a single stage |
 | `status` | row counts, freshest `played_at` (lag), replay backlog, ingest state |
 
@@ -59,6 +72,20 @@ Backfill and incremental are the same command: the first `run` walks all of
 history (resumable — a killed run continues from the persisted cursor); later
 runs stop after a few pages of already-known hands and only backfill missing
 replays (`raw.tables LEFT JOIN raw.replays`).
+
+## Commands — `arena_transform.py` (Stage 2)
+
+| Command | What it does |
+|---|---|
+| `init-db` | apply `schema_analytics.sql` (idempotent; also auto-applied on every run) |
+| `run` | watermark-incremental transform: walk new replays → mirror pairs → marts → QA gate. Exit code 1 on QA violations (data stays committed). |
+| `rebuild` | truncate `stg`/`int`/`mart` (keeps the equity cache) and re-run everything |
+| `status` | row counts per tier, watermark vs raw, last QA result |
+| `selftest` | walker + equity engine checks against `samples/` — no DB needed |
+
+**The hourly pipeline is `arena_etl.py run` followed by `arena_transform.py
+run`** (that is what the systemd unit / crontab example execute). Full details
+of what gets built and why: [`ANALYTICS.md`](ANALYTICS.md).
 
 ## Deploy on the server
 
@@ -71,8 +98,10 @@ network) and point `ARENA_RAW_DB_URL` at it.
 sudo mkdir -p /opt/arena-etl && sudo chown $USER /opt/arena-etl
 rsync -av --exclude .venv --exclude .env etl/ server:/opt/arena-etl/
 ssh server 'cd /opt/arena-etl && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt'
-# create /opt/arena-etl/.env with the real DSN, then backfill once:
-ssh server 'cd /opt/arena-etl && .venv/bin/python arena_etl.py run'
+# create /opt/arena-etl/.env with the real DSN, then backfill once (loader can
+# take hours on a full history walk; the transform then processes what landed —
+# its first pass is dominated by warming the preflop equity cache):
+ssh server 'cd /opt/arena-etl && .venv/bin/python arena_etl.py run && .venv/bin/python arena_transform.py run'
 ```
 
 Then schedule hourly (PRD §9) with **one** of:
@@ -94,3 +123,8 @@ counts per table, the freshest hand timestamp vs. now (ingest lag), the
 replay backlog, and per-endpoint ingest state. Every stage logs
 `seen / inserted` counts, so a healthy incremental run reads like:
 `tables[…]: done — 4 pages, 400 seen, 37 new`.
+
+`arena_transform.py status` shows the analytics side: rows per stg/int/mart
+table, the walk watermark vs. raw, and the last QA result. A QA violation
+(zero-sum break, mirror deck mismatch, …) makes the transform exit 1, which
+fails the systemd unit / cron mail — that is the alert channel.

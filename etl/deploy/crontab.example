@@ -1,3 +1,5 @@
 # Cron alternative to the systemd timer (crontab -e on the server).
-# Hourly incremental run; stdout/stderr appended to a logfile.
-17 * * * * cd /opt/arena-etl && ./.venv/bin/python arena_etl.py run >> /var/log/arena-etl.log 2>&1
+# Hourly incremental run (loader, then transform); stdout/stderr appended to a
+# logfile. The ';' (not '&&') lets the transform process whatever landed even
+# when one loader stage failed.
+17 * * * * cd /opt/arena-etl && { ./.venv/bin/python arena_etl.py run; ./.venv/bin/python arena_transform.py run; } >> /var/log/arena-etl.log 2>&1
