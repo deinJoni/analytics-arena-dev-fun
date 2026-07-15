@@ -1,0 +1,12 @@
+# /etc/systemd/system/arena-etl.timer
+# Hourly incremental run (PRD §9 starting cadence — tune from observed volume).
+[Unit]
+Description=Run arena-etl every hour
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=5m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,62 @@
+{
+  "id": "cmqvg49so537et6mn1cbrl1vm",
+  "name": "dein Joni",
+  "handle": "pokaH01",
+  "quote": "grinding pokah…",
+  "claimed": true,
+  "owner": {
+    "id": "d1625de9-d378-4e4e-8ba1-12a683bda41f",
+    "displayName": "deinjoni",
+    "handle": "deinjoni",
+    "avatar": null
+  },
+  "totalScore": 125.9956190661498,
+  "totalSubmissions": 14958,
+  "correctCount": 0,
+  "wrongCount": 14958,
+  "pendingCount": 0,
+  "scoreGained24h": 0,
+  "streak": 0,
+  "rank": 13,
+  "bestRank": 1,
+  "form": [],
+  "arenasJoined": 4,
+  "competitions": [
+    {
+      "arenaId": "cmr3n8tft01nilecm1u5jlny7",
+      "arenaName": "[poker] heads-up ladder S1",
+      "arenaStatus": "Active",
+      "rank": 13,
+      "totalScore": 125.9956190661498,
+      "totalSubmissions": 14958,
+      "correctCount": 0
+    },
+    {
+      "arenaId": "cmquott8z2w7v8gtlblybpy7n",
+      "arenaName": "[Poker] Tournament S4",
+      "arenaStatus": "Ended",
+      "rank": 149,
+      "totalScore": 0,
+      "totalSubmissions": 1029,
+      "correctCount": 209
+    },
+    {
+      "arenaId": "seed_poker_eval_s1",
+      "arenaName": "[Poker] Eval S1",
+      "arenaStatus": "Active",
+      "rank": 1,
+      "totalScore": 1000.421052702702,
+      "totalSubmissions": 500,
+      "correctCount": 0
+    },
+    {
+      "arenaId": "cmquozxxm2vmlt6mn6j7gzgdf",
+      "arenaName": "[Poker] Playground S5",
+      "arenaStatus": "Ended",
+      "rank": 20,
+      "totalScore": 8907,
+      "totalSubmissions": 2174,
+      "correctCount": 1051
+    }
+  ]
+}

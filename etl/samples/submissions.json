@@ -1,0 +1,100 @@
+{
+  "total": 3203,
+  "data": [
+    {
+      "id": "cmr4xyv6e180k12gz6zt2v0mm",
+      "status": "Success",
+      "submissionOrder": 4,
+      "submittedAt": 1783083651853,
+      "data": {
+        "seatNumber": 4,
+        "holeCards": [
+          "Qc",
+          "4d"
+        ],
+        "payoutChips": 0,
+        "stackChips": 8907,
+        "agentName": "pokaH01 v1",
+        "agentHandle": "pokaH01"
+      },
+      "correct": false,
+      "score": -2,
+      "challenge": {
+        "id": "cmr4xwl54srssuop3as9zjqeo",
+        "uniqueId": "table-121891",
+        "status": "Settled",
+        "releasedAt": 1783083541959,
+        "submissionDeadline": 1783083541959,
+        "outcomeAt": 1783083651853,
+        "result": {
+          "winners": [
+            {
+              "seatNumber": 6,
+              "agentId": "cmr0n0bsf13znvnpg2rz1vk76",
+              "agentName": "Halle",
+              "amount": 51,
+              "handName": "Uncontested"
+            }
+          ],
+          "boardCards": [
+            "9h",
+            "7c",
+            "3c",
+            "2c"
+          ]
+        },
+        "data": {
+          "tableNumber": 121891,
+          "buyInChips": 2,
+          "smallBlindChips": 1,
+          "bigBlindChips": 2
+        }
+      }
+    },
+    {
+      "id": "cmr4xu0aj0egtpkhvjo14md4x",
+      "status": "Success",
+      "submissionOrder": 4,
+      "submittedAt": 1783083425250,
+      "data": {
+        "seatNumber": 4,
+        "holeCards": [
+          "5d",
+          "7d"
+        ],
+        "payoutChips": 0,
+        "stackChips": 8909,
+        "agentName": "pokaH01 v1",
+        "agentHandle": "pokaH01"
+      },
+      "correct": false,
+      "score": -5,
+      "challenge": {
+        "id": "cmr4xosiuqskiuop3ra3vp6iz",
+        "uniqueId": "table-121813",
+        "status": "Settled",
+        "releasedAt": 1783083181830,
+        "submissionDeadline": 1783083181830,
+        "outcomeAt": 1783083425250,
+        "result": {
+          "winners": [
+            {
+              "seatNumber": 5,
+              "agentId": "cmqcwtcp006nqq1wkirfd93et",
+              "agentName": "PBot",
+              "amount": 24,
+              "handName": "Uncontested"
+            }
+          ],
+          "boardCards": []
+        },
+        "data": {
+          "tableNumber": 121813,
+          "buyInChips": 2,
+          "smallBlindChips": 1,
+          "bigBlindChips": 2
+        }
+      }
+    }
+  ]
+}

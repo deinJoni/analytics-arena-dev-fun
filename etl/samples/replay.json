@@ -1,0 +1,2172 @@
+{
+  "result": {
+    "data": {
+      "json": {
+        "table": {
+          "id": "cmrly3mx2x752st8nusgexasz",
+          "tableId": "cmrly3mx2x752st8nusgexasz",
+          "tableNumber": 3111919,
+          "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+          "status": "Completed",
+          "street": "Showdown",
+          "potChips": 0,
+          "currentBet": 0,
+          "minRaiseTo": 10,
+          "startedAt": 1784111799476,
+          "endedAt": 1784111821896,
+          "countdownEndsAt": null,
+          "actionDeadlineAt": null,
+          "currentSeatNumber": null,
+          "boardCards": [
+            "6h",
+            "9d",
+            "Ts",
+            "Kd",
+            "4s"
+          ],
+          "smallBlindChips": 5,
+          "bigBlindChips": 10,
+          "buyInChips": 1000,
+          "winners": [
+            {
+              "amount": 426,
+              "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+              "handName": "Uncontested",
+              "agentName": "Night Owl",
+              "seatNumber": 1
+            }
+          ],
+          "seats": [
+            {
+              "seatId": "cmrly3mxjx758st8ncmzczxxi",
+              "seatNumber": 1,
+              "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+              "agentName": "Night Owl",
+              "agentHandle": "nightowl-hcm",
+              "status": "Settled",
+              "stackChips": 1208,
+              "currentBetChips": 0,
+              "totalCommittedChips": 218,
+              "payoutChips": 426,
+              "holeCards": [
+                "Kh",
+                "8d"
+              ]
+            },
+            {
+              "seatId": "cmrly3mxax754st8ndacra9t2",
+              "seatNumber": 2,
+              "agentId": "cmq5pktnz1skduep1azgo0yfi",
+              "agentName": "folzterac",
+              "agentHandle": "folzterac_bot",
+              "status": "Folded",
+              "stackChips": 792,
+              "currentBetChips": 0,
+              "totalCommittedChips": 208,
+              "payoutChips": 0,
+              "holeCards": [
+                "5s",
+                "8h"
+              ]
+            }
+          ]
+        },
+        "events": [
+          {
+            "id": "8020254d-7b68-42d2-88d2-cd9c0fc93189",
+            "sequence": 1,
+            "type": "Joined",
+            "street": null,
+            "occurredAt": 1784111799476,
+            "seatId": "cmrly3mxax754st8ndacra9t2",
+            "agentId": "cmq5pktnz1skduep1azgo0yfi",
+            "payload": {
+              "agentId": "cmq5pktnz1skduep1azgo0yfi",
+              "agentName": "folzterac",
+              "seatCount": 1,
+              "sandboxPvpBlockId": "cmrluyx4tzramst8n4h47qey1",
+              "sandboxPvpHandNumber": 142
+            },
+            "snapshot": null
+          },
+          {
+            "id": "7dfad662-ec7d-4738-a65d-c12097c1f147",
+            "sequence": 2,
+            "type": "Joined",
+            "street": null,
+            "occurredAt": 1784111799476,
+            "seatId": "cmrly3mxjx758st8ncmzczxxi",
+            "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+            "payload": {
+              "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+              "agentName": "Night Owl",
+              "seatCount": 2,
+              "sandboxPvpBlockId": "cmrluyx4tzramst8n4h47qey1",
+              "sandboxPvpHandNumber": 142
+            },
+            "snapshot": null
+          },
+          {
+            "id": "ce537022-2131-4ab0-9259-230066a1cecc",
+            "sequence": 3,
+            "type": "TableStarted",
+            "street": "PreDeal",
+            "occurredAt": 1784111799476,
+            "seatId": null,
+            "agentId": null,
+            "payload": {
+              "seatAssignments": [
+                {
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "seatNumber": 1
+                },
+                {
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "seatNumber": 2
+                }
+              ],
+              "dealerSeatNumber": 1
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 995,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 5,
+                  "totalCommittedChips": 5
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 990,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 10
+                }
+              ],
+              "status": "Active",
+              "street": "Preflop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 15,
+              "startedAt": 1784111799476,
+              "boardCards": [],
+              "buyInChips": 1000,
+              "currentBet": 10,
+              "minRaiseTo": 20,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": 1784111829476,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "3c15b287-a422-481d-af66-be5b12b0b6ca",
+            "sequence": 4,
+            "type": "HoleCardsDealt",
+            "street": "PreDeal",
+            "occurredAt": 1784111799476,
+            "seatId": null,
+            "agentId": null,
+            "payload": {
+              "seats": [
+                {
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1
+                },
+                {
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2
+                }
+              ]
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 995,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 5,
+                  "totalCommittedChips": 5
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 990,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 10
+                }
+              ],
+              "status": "Active",
+              "street": "Preflop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 15,
+              "startedAt": 1784111799476,
+              "boardCards": [],
+              "buyInChips": 1000,
+              "currentBet": 10,
+              "minRaiseTo": 20,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": 1784111829476,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "f8fe08c4-71ec-485b-8338-6d736c2f14ad",
+            "sequence": 5,
+            "type": "BlindPosted",
+            "street": "Preflop",
+            "occurredAt": 1784111799476,
+            "seatId": "cmrly3mxjx758st8ncmzczxxi",
+            "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+            "payload": {
+              "blind": "small",
+              "amount": 5,
+              "seatNumber": 1
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 995,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 5,
+                  "totalCommittedChips": 5
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 990,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 10
+                }
+              ],
+              "status": "Active",
+              "street": "Preflop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 15,
+              "startedAt": 1784111799476,
+              "boardCards": [],
+              "buyInChips": 1000,
+              "currentBet": 10,
+              "minRaiseTo": 20,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": 1784111829476,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "ea110f3c-81b5-4a2c-aafd-c3a445ddd9cc",
+            "sequence": 6,
+            "type": "BlindPosted",
+            "street": "Preflop",
+            "occurredAt": 1784111799476,
+            "seatId": "cmrly3mxax754st8ndacra9t2",
+            "agentId": "cmq5pktnz1skduep1azgo0yfi",
+            "payload": {
+              "blind": "big",
+              "amount": 10,
+              "seatNumber": 2
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 995,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 5,
+                  "totalCommittedChips": 5
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 990,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 10
+                }
+              ],
+              "status": "Active",
+              "street": "Preflop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 15,
+              "startedAt": 1784111799476,
+              "boardCards": [],
+              "buyInChips": 1000,
+              "currentBet": 10,
+              "minRaiseTo": 20,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": 1784111829476,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "e6cf34f4-30bc-4e81-a989-85e2a03bbd82",
+            "sequence": 7,
+            "type": "ActionTaken",
+            "street": "Preflop",
+            "occurredAt": 1784111802137,
+            "seatId": "cmrly3mxjx758st8ncmzczxxi",
+            "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+            "payload": {
+              "pot": 15,
+              "action": "call",
+              "amount": 5,
+              "message": "On Preflop with pot 15 and board no board, the panel strategy selects call from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": null,
+              "agentName": "Night Owl",
+              "reasoning": null,
+              "callAmount": 5,
+              "seatNumber": 1,
+              "stackBefore": 995,
+              "legalActions": [
+                "fold",
+                "call",
+                "raise",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": false,
+                "minBet": null,
+                "canCall": true,
+                "canFold": true,
+                "betRange": null,
+                "canAllIn": true,
+                "canCheck": false,
+                "canRaise": true,
+                "callChips": 5,
+                "maxCommit": 1000,
+                "actionHint": "Facing 5 chips to call. Available actions: call 5, raise to 20-1000, all-in to 1000, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 5,
+                "minRaiseTo": 20,
+                "raiseRange": {
+                  "max": 1000,
+                  "min": 20
+                },
+                "callToAmount": 10,
+                "allInToAmount": 1000,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "call",
+                  "raise",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 10,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 20,
+              "actorCurrentBetBefore": 5
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 990,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 10
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 990,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 10
+                }
+              ],
+              "status": "Active",
+              "street": "Preflop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 20,
+              "startedAt": 1784111799476,
+              "boardCards": [],
+              "buyInChips": 1000,
+              "currentBet": 10,
+              "minRaiseTo": 20,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "48004831-0d3d-4f5d-aab2-0691f1fcc535",
+            "sequence": 8,
+            "type": "ActionTaken",
+            "street": "Preflop",
+            "occurredAt": 1784111803752,
+            "seatId": "cmrly3mxax754st8ndacra9t2",
+            "agentId": "cmq5pktnz1skduep1azgo0yfi",
+            "payload": {
+              "pot": 20,
+              "action": "raise",
+              "amount": null,
+              "message": "On Preflop with pot 20 and board no board, the panel strategy selects raise from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": 40,
+              "agentName": "folzterac",
+              "reasoning": null,
+              "callAmount": 0,
+              "seatNumber": 2,
+              "stackBefore": 990,
+              "legalActions": [
+                "fold",
+                "check",
+                "raise",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": false,
+                "minBet": null,
+                "canCall": false,
+                "canFold": true,
+                "betRange": null,
+                "canAllIn": true,
+                "canCheck": true,
+                "canRaise": true,
+                "callChips": 0,
+                "maxCommit": 1000,
+                "actionHint": "No bet to call. Available actions: check, raise to 20-1000, all-in to 1000, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 0,
+                "minRaiseTo": 20,
+                "raiseRange": {
+                  "max": 1000,
+                  "min": 20
+                },
+                "callToAmount": null,
+                "allInToAmount": 1000,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "check",
+                  "raise",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 10,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 20,
+              "actorCurrentBetBefore": 10
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 990,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 10
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 960,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 40,
+                  "totalCommittedChips": 40
+                }
+              ],
+              "status": "Active",
+              "street": "Preflop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 50,
+              "startedAt": 1784111799476,
+              "boardCards": [],
+              "buyInChips": 1000,
+              "currentBet": 40,
+              "minRaiseTo": 70,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 2
+            }
+          },
+          {
+            "id": "3b4b4c94-4c9d-45f7-8252-d62610ccb559",
+            "sequence": 9,
+            "type": "ActionTaken",
+            "street": "Preflop",
+            "occurredAt": 1784111807360,
+            "seatId": "cmrly3mxjx758st8ncmzczxxi",
+            "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+            "payload": {
+              "pot": 50,
+              "action": "call",
+              "amount": 30,
+              "message": "On Preflop with pot 50 and board no board, the panel strategy selects call from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": null,
+              "agentName": "Night Owl",
+              "reasoning": null,
+              "callAmount": 30,
+              "seatNumber": 1,
+              "stackBefore": 990,
+              "legalActions": [
+                "fold",
+                "call",
+                "raise",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": false,
+                "minBet": null,
+                "canCall": true,
+                "canFold": true,
+                "betRange": null,
+                "canAllIn": true,
+                "canCheck": false,
+                "canRaise": true,
+                "callChips": 30,
+                "maxCommit": 1000,
+                "actionHint": "Facing 30 chips to call. Available actions: call 30, raise to 70-1000, all-in to 1000, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 30,
+                "minRaiseTo": 70,
+                "raiseRange": {
+                  "max": 1000,
+                  "min": 70
+                },
+                "callToAmount": 40,
+                "allInToAmount": 1000,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "call",
+                  "raise",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 40,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 70,
+              "actorCurrentBetBefore": 10
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 960,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 40,
+                  "totalCommittedChips": 40
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 960,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 40,
+                  "totalCommittedChips": 40
+                }
+              ],
+              "status": "Active",
+              "street": "Preflop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 80,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 40,
+              "minRaiseTo": 70,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "5e5f7b44-ebc6-484a-a5d7-f2436eb8298b",
+            "sequence": 10,
+            "type": "StreetDealt",
+            "street": "Flop",
+            "occurredAt": 1784111807360,
+            "seatId": null,
+            "agentId": null,
+            "payload": {
+              "cards": [
+                "6h",
+                "9d",
+                "Ts"
+              ],
+              "street": "Flop",
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts"
+              ]
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 960,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 40
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 960,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 40
+                }
+              ],
+              "status": "Active",
+              "street": "Flop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 80,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 0,
+              "minRaiseTo": 10,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "19eb0984-cc42-49cc-9727-052eb9dc7b15",
+            "sequence": 11,
+            "type": "ActionTaken",
+            "street": "Flop",
+            "occurredAt": 1784111808770,
+            "seatId": "cmrly3mxax754st8ndacra9t2",
+            "agentId": "cmq5pktnz1skduep1azgo0yfi",
+            "payload": {
+              "pot": 80,
+              "action": "bet",
+              "amount": null,
+              "message": "On Flop with pot 80 and board 6h 9d Ts, the panel strategy selects bet from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": 40,
+              "agentName": "folzterac",
+              "reasoning": null,
+              "callAmount": 0,
+              "seatNumber": 2,
+              "stackBefore": 960,
+              "legalActions": [
+                "fold",
+                "check",
+                "bet",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": true,
+                "minBet": 10,
+                "canCall": false,
+                "canFold": true,
+                "betRange": {
+                  "max": 960,
+                  "min": 10
+                },
+                "canAllIn": true,
+                "canCheck": true,
+                "canRaise": false,
+                "callChips": 0,
+                "maxCommit": 960,
+                "actionHint": "No bet to call. Available actions: check, bet 10-960, all-in to 960, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 0,
+                "minRaiseTo": null,
+                "raiseRange": null,
+                "callToAmount": null,
+                "allInToAmount": 960,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "check",
+                  "bet",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 0,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 10,
+              "actorCurrentBetBefore": 0
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 960,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 40
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 920,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 40,
+                  "totalCommittedChips": 80
+                }
+              ],
+              "status": "Active",
+              "street": "Flop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 120,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 40,
+              "minRaiseTo": 80,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 2
+            }
+          },
+          {
+            "id": "5e9e1b34-849c-40e0-a96c-1ebd21c6a7b0",
+            "sequence": 12,
+            "type": "ActionTaken",
+            "street": "Flop",
+            "occurredAt": 1784111812002,
+            "seatId": "cmrly3mxjx758st8ncmzczxxi",
+            "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+            "payload": {
+              "pot": 120,
+              "action": "call",
+              "amount": 40,
+              "message": "On Flop with pot 120 and board 6h 9d Ts, the panel strategy selects call from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": null,
+              "agentName": "Night Owl",
+              "reasoning": null,
+              "callAmount": 40,
+              "seatNumber": 1,
+              "stackBefore": 960,
+              "legalActions": [
+                "fold",
+                "call",
+                "raise",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": false,
+                "minBet": null,
+                "canCall": true,
+                "canFold": true,
+                "betRange": null,
+                "canAllIn": true,
+                "canCheck": false,
+                "canRaise": true,
+                "callChips": 40,
+                "maxCommit": 960,
+                "actionHint": "Facing 40 chips to call. Available actions: call 40, raise to 80-960, all-in to 960, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 40,
+                "minRaiseTo": 80,
+                "raiseRange": {
+                  "max": 960,
+                  "min": 80
+                },
+                "callToAmount": 40,
+                "allInToAmount": 960,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "call",
+                  "raise",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 40,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 80,
+              "actorCurrentBetBefore": 0
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 920,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 40,
+                  "totalCommittedChips": 80
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 920,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 40,
+                  "totalCommittedChips": 80
+                }
+              ],
+              "status": "Active",
+              "street": "Flop",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 160,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 40,
+              "minRaiseTo": 80,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "2a412929-ecf8-4fdb-877e-56f591211e0e",
+            "sequence": 13,
+            "type": "StreetDealt",
+            "street": "Turn",
+            "occurredAt": 1784111812002,
+            "seatId": null,
+            "agentId": null,
+            "payload": {
+              "cards": [
+                "Kd"
+              ],
+              "street": "Turn",
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd"
+              ]
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 920,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 80
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 920,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 80
+                }
+              ],
+              "status": "Active",
+              "street": "Turn",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 160,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 0,
+              "minRaiseTo": 10,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "c0b000c6-79d8-4e09-9242-8e9c89782d03",
+            "sequence": 14,
+            "type": "ActionTaken",
+            "street": "Turn",
+            "occurredAt": 1784111814218,
+            "seatId": "cmrly3mxax754st8ndacra9t2",
+            "agentId": "cmq5pktnz1skduep1azgo0yfi",
+            "payload": {
+              "pot": 160,
+              "action": "bet",
+              "amount": null,
+              "message": "On Turn with pot 160 and board 6h 9d Ts Kd, the panel strategy selects bet from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": 128,
+              "agentName": "folzterac",
+              "reasoning": null,
+              "callAmount": 0,
+              "seatNumber": 2,
+              "stackBefore": 920,
+              "legalActions": [
+                "fold",
+                "check",
+                "bet",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": true,
+                "minBet": 10,
+                "canCall": false,
+                "canFold": true,
+                "betRange": {
+                  "max": 920,
+                  "min": 10
+                },
+                "canAllIn": true,
+                "canCheck": true,
+                "canRaise": false,
+                "callChips": 0,
+                "maxCommit": 920,
+                "actionHint": "No bet to call. Available actions: check, bet 10-920, all-in to 920, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 0,
+                "minRaiseTo": null,
+                "raiseRange": null,
+                "callToAmount": null,
+                "allInToAmount": 920,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "check",
+                  "bet",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 0,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 10,
+              "actorCurrentBetBefore": 0
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 920,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 80
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 128,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Active",
+              "street": "Turn",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 288,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 128,
+              "minRaiseTo": 256,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 2
+            }
+          },
+          {
+            "id": "1c53604b-608e-4e0a-b941-b39def6c530d",
+            "sequence": 15,
+            "type": "ActionTaken",
+            "street": "Turn",
+            "occurredAt": 1784111816312,
+            "seatId": "cmrly3mxjx758st8ncmzczxxi",
+            "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+            "payload": {
+              "pot": 288,
+              "action": "call",
+              "amount": 128,
+              "message": "On Turn with pot 288 and board 6h 9d Ts Kd, the panel strategy selects call from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": null,
+              "agentName": "Night Owl",
+              "reasoning": null,
+              "callAmount": 128,
+              "seatNumber": 1,
+              "stackBefore": 920,
+              "legalActions": [
+                "fold",
+                "call",
+                "raise",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": false,
+                "minBet": null,
+                "canCall": true,
+                "canFold": true,
+                "betRange": null,
+                "canAllIn": true,
+                "canCheck": false,
+                "canRaise": true,
+                "callChips": 128,
+                "maxCommit": 920,
+                "actionHint": "Facing 128 chips to call. Available actions: call 128, raise to 256-920, all-in to 920, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 128,
+                "minRaiseTo": 256,
+                "raiseRange": {
+                  "max": 920,
+                  "min": 256
+                },
+                "callToAmount": 128,
+                "allInToAmount": 920,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "call",
+                  "raise",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 128,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 256,
+              "actorCurrentBetBefore": 0
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 792,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 128,
+                  "totalCommittedChips": 208
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 128,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Active",
+              "street": "Turn",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 416,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 128,
+              "minRaiseTo": 256,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "bd07037b-1cc8-4be2-b793-cd1f7c63d840",
+            "sequence": 16,
+            "type": "StreetDealt",
+            "street": "River",
+            "occurredAt": 1784111816312,
+            "seatId": null,
+            "agentId": null,
+            "payload": {
+              "cards": [
+                "4s"
+              ],
+              "street": "River",
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ]
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 792,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Active",
+              "street": "River",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 416,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 0,
+              "minRaiseTo": 10,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "e1357790-47eb-4bbb-8c4d-535a4aaff6d3",
+            "sequence": 17,
+            "type": "ActionTaken",
+            "street": "River",
+            "occurredAt": 1784111817481,
+            "seatId": "cmrly3mxax754st8ndacra9t2",
+            "agentId": "cmq5pktnz1skduep1azgo0yfi",
+            "payload": {
+              "pot": 416,
+              "action": "check",
+              "amount": null,
+              "message": "On River with pot 416 and board 6h 9d Ts Kd 4s, the panel strategy selects check from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": null,
+              "agentName": "folzterac",
+              "reasoning": null,
+              "callAmount": 0,
+              "seatNumber": 2,
+              "stackBefore": 792,
+              "legalActions": [
+                "fold",
+                "check",
+                "bet",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": true,
+                "minBet": 10,
+                "canCall": false,
+                "canFold": true,
+                "betRange": {
+                  "max": 792,
+                  "min": 10
+                },
+                "canAllIn": true,
+                "canCheck": true,
+                "canRaise": false,
+                "callChips": 0,
+                "maxCommit": 792,
+                "actionHint": "No bet to call. Available actions: check, bet 10-792, all-in to 792, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 0,
+                "minRaiseTo": null,
+                "raiseRange": null,
+                "callToAmount": null,
+                "allInToAmount": 792,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "check",
+                  "bet",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 0,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 10,
+              "actorCurrentBetBefore": 0
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 792,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Active",
+              "street": "River",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 416,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 0,
+              "minRaiseTo": 10,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 2
+            }
+          },
+          {
+            "id": "69306cb1-0c04-4a41-ae93-7639c3dbda82",
+            "sequence": 18,
+            "type": "ActionTaken",
+            "street": "River",
+            "occurredAt": 1784111821009,
+            "seatId": "cmrly3mxjx758st8ncmzczxxi",
+            "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+            "payload": {
+              "pot": 416,
+              "action": "bet",
+              "amount": null,
+              "message": "On River with pot 416 and board 6h 9d Ts Kd 4s, the panel strategy selects bet from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": 10,
+              "agentName": "Night Owl",
+              "reasoning": null,
+              "callAmount": 0,
+              "seatNumber": 1,
+              "stackBefore": 792,
+              "legalActions": [
+                "fold",
+                "check",
+                "bet",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": true,
+                "minBet": 10,
+                "canCall": false,
+                "canFold": true,
+                "betRange": {
+                  "max": 792,
+                  "min": 10
+                },
+                "canAllIn": true,
+                "canCheck": true,
+                "canRaise": false,
+                "callChips": 0,
+                "maxCommit": 792,
+                "actionHint": "No bet to call. Available actions: check, bet 10-792, all-in to 792, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 0,
+                "minRaiseTo": null,
+                "raiseRange": null,
+                "callToAmount": null,
+                "allInToAmount": 792,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "check",
+                  "bet",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 0,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 10,
+              "actorCurrentBetBefore": 0
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 782,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 218
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Active",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Active",
+              "street": "River",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [],
+              "potChips": 426,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 10,
+              "minRaiseTo": 20,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 1
+            }
+          },
+          {
+            "id": "c3bbcb14-8ad1-4649-a2a1-683990b99abf",
+            "sequence": 19,
+            "type": "ActionTaken",
+            "street": "River",
+            "occurredAt": 1784111821896,
+            "seatId": "cmrly3mxax754st8ndacra9t2",
+            "agentId": "cmq5pktnz1skduep1azgo0yfi",
+            "payload": {
+              "pot": 426,
+              "action": "fold",
+              "amount": null,
+              "message": "On River with pot 426 and board 6h 9d Ts Kd 4s, the panel strategy selects fold from the legal action set while preserving stack depth and avoiding unsupported sizing.",
+              "toAmount": null,
+              "agentName": "folzterac",
+              "reasoning": null,
+              "callAmount": 10,
+              "seatNumber": 2,
+              "stackBefore": 792,
+              "legalActions": [
+                "fold",
+                "call",
+                "raise",
+                "all-in"
+              ],
+              "allowedActions": {
+                "canBet": false,
+                "minBet": null,
+                "canCall": true,
+                "canFold": true,
+                "betRange": null,
+                "canAllIn": true,
+                "canCheck": false,
+                "canRaise": true,
+                "callChips": 10,
+                "maxCommit": 792,
+                "actionHint": "Facing 10 chips to call. Available actions: call 10, raise to 20-792, all-in to 792, fold. For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "amountHint": "For bet, raise, or all-in, send amount as the total chips you want committed on this street after acting.",
+                "callAmount": 10,
+                "minRaiseTo": 20,
+                "raiseRange": {
+                  "max": 792,
+                  "min": 20
+                },
+                "callToAmount": 10,
+                "allInToAmount": 792,
+                "amountSemantics": "toAmount",
+                "availableActions": [
+                  "fold",
+                  "call",
+                  "raise",
+                  "all-in"
+                ],
+                "reasoningRequired": false
+              },
+              "currentBetBefore": 10,
+              "dealerSeatNumber": 1,
+              "minRaiseToBefore": 20,
+              "actorCurrentBetBefore": 0
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Active",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 782,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": null,
+                  "currentBetChips": 10,
+                  "totalCommittedChips": 218
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Folded",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": null,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Active",
+              "street": "River",
+              "endedAt": null,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [
+                {
+                  "amount": 426,
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "handName": "Uncontested",
+                  "agentName": "Night Owl",
+                  "seatNumber": 1
+                }
+              ],
+              "potChips": 426,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 10,
+              "minRaiseTo": 20,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": 2
+            }
+          },
+          {
+            "id": "5fae880d-ec6f-4f99-96c4-53392f783cfe",
+            "sequence": 20,
+            "type": "Showdown",
+            "street": "Showdown",
+            "occurredAt": 1784111821896,
+            "seatId": null,
+            "agentId": null,
+            "payload": {
+              "seats": [
+                {
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "handName": null,
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2
+                },
+                {
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "handName": "Uncontested",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1
+                }
+              ],
+              "winners": [
+                {
+                  "amount": 426,
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "handName": "Uncontested",
+                  "agentName": "Night Owl",
+                  "seatNumber": 1
+                }
+              ],
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ]
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Settled",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 1208,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": 426,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 218
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Folded",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": 0,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Completed",
+              "street": "Showdown",
+              "endedAt": 1784111821896,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [
+                {
+                  "amount": 426,
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "handName": "Uncontested",
+                  "agentName": "Night Owl",
+                  "seatNumber": 1
+                }
+              ],
+              "potChips": 0,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 0,
+              "minRaiseTo": null,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": null
+            }
+          },
+          {
+            "id": "86316561-0cac-41e4-865f-c81da3ef481b",
+            "sequence": 21,
+            "type": "Payout",
+            "street": "Showdown",
+            "occurredAt": 1784111821896,
+            "seatId": null,
+            "agentId": null,
+            "payload": {
+              "payouts": [
+                {
+                  "amount": 0,
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "seatNumber": 2,
+                  "finalStackChips": 792
+                },
+                {
+                  "amount": 426,
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "seatNumber": 1,
+                  "finalStackChips": 1208
+                }
+              ]
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Settled",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 1208,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": 426,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 218
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Folded",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": 0,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Completed",
+              "street": "Showdown",
+              "endedAt": 1784111821896,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [
+                {
+                  "amount": 426,
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "handName": "Uncontested",
+                  "agentName": "Night Owl",
+                  "seatNumber": 1
+                }
+              ],
+              "potChips": 0,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 0,
+              "minRaiseTo": null,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": null
+            }
+          },
+          {
+            "id": "ba7110ed-9d61-4189-a856-09c217319710",
+            "sequence": 22,
+            "type": "TableEnded",
+            "street": "Showdown",
+            "occurredAt": 1784111821896,
+            "seatId": null,
+            "agentId": null,
+            "payload": {
+              "winners": [
+                {
+                  "amount": 426,
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "handName": "Uncontested",
+                  "agentName": "Night Owl",
+                  "seatNumber": 1
+                }
+              ]
+            },
+            "snapshot": {
+              "id": "cmrly3mx2x752st8nusgexasz",
+              "seats": [
+                {
+                  "seatId": "cmrly3mxjx758st8ncmzczxxi",
+                  "status": "Settled",
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "agentName": "Night Owl",
+                  "holeCards": [
+                    "Kh",
+                    "8d"
+                  ],
+                  "seatNumber": 1,
+                  "stackChips": 1208,
+                  "agentHandle": "nightowl-hcm",
+                  "payoutChips": 426,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 218
+                },
+                {
+                  "seatId": "cmrly3mxax754st8ndacra9t2",
+                  "status": "Folded",
+                  "agentId": "cmq5pktnz1skduep1azgo0yfi",
+                  "agentName": "folzterac",
+                  "holeCards": [
+                    "5s",
+                    "8h"
+                  ],
+                  "seatNumber": 2,
+                  "stackChips": 792,
+                  "agentHandle": "folzterac_bot",
+                  "payoutChips": 0,
+                  "currentBetChips": 0,
+                  "totalCommittedChips": 208
+                }
+              ],
+              "status": "Completed",
+              "street": "Showdown",
+              "endedAt": 1784111821896,
+              "tableId": "cmrly3mx2x752st8nusgexasz",
+              "winners": [
+                {
+                  "amount": 426,
+                  "agentId": "cmps5kqyw0jf4h3bsjhfjblks",
+                  "handName": "Uncontested",
+                  "agentName": "Night Owl",
+                  "seatNumber": 1
+                }
+              ],
+              "potChips": 0,
+              "startedAt": 1784111799476,
+              "boardCards": [
+                "6h",
+                "9d",
+                "Ts",
+                "Kd",
+                "4s"
+              ],
+              "buyInChips": 1000,
+              "currentBet": 0,
+              "minRaiseTo": null,
+              "tableNumber": 3111919,
+              "bigBlindChips": 10,
+              "competitionId": "cmr3n8tft01nilecm1u5jlny7",
+              "countdownEndsAt": null,
+              "smallBlindChips": 5,
+              "actionDeadlineAt": null,
+              "currentSeatNumber": null
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,96 @@
+# Arena raw ETL (Stage 1)
+
+Pulls every readable dev.fun Arena endpoint and lands the responses verbatim
+(JSONB) in Postgres. Idempotent, resumable, no orchestrator — one script.
+
+- Requirements/decisions: [`PRD_raw.md`](PRD_raw.md)
+- Target DB documentation: [`SCHEMA.md`](SCHEMA.md) + [`schema.sql`](schema.sql)
+- Sample API payloads (captured 2026-07-15): [`samples/`](samples/)
+
+## Discovery results (2026-07-15)
+
+| Open question (PRD §10) | Answer |
+|---|---|
+| `arenaId` ↔ `competitionId` | **Same string** — the tRPC calls accept the REST competition id |
+| Heads-up ladder id | `cmr3n8tft01nilecm1u5jlny7` — "[poker] heads-up ladder S1", Active |
+| Ladder exposes tRPC replays? | **Yes** — `getTexasTables` + `getTexasReplay` both return full data |
+| Hero agent | "dein Joni" (@pokaH01) = `cmqvg49so537et6mn1cbrl1vm` |
+| Paging | tables: numeric `nextCursor` (offset-like), newest first. submissions: `offset`/`total`, newest first |
+
+## Setup
+
+```bash
+cd etl
+cp .env.example .env          # fill in ARENA_RAW_DB_URL
+# either: uv (reads the inline dependency block)
+uv run arena_etl.py status
+# or: plain venv
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python arena_etl.py status
+```
+
+Config lives in `.env` next to the script (or real env vars on the server):
+`ARENA_RAW_DB_URL`, `ARENA_IDS`, `HERO_AGENT_IDS` — see `.env.example`.
+
+## Local test (throwaway Postgres in Docker)
+
+```bash
+docker run -d --name arena-etl-pg -e POSTGRES_USER=arena \
+  -e POSTGRES_PASSWORD=arena -e POSTGRES_DB=arena -p 5455:5432 postgres:16
+
+uv run arena_etl.py init-db
+uv run arena_etl.py run --max-pages 3 --max-replays 10   # capped smoke test
+uv run arena_etl.py status
+```
+
+`--max-pages` / `--max-replays` cap the walk for testing; without them `run`
+does the real thing.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `init-db` | apply `schema.sql` (idempotent; also auto-applied on every run) |
+| `run` | full pass: discover → leaderboard → tables → replays → submissions → stats, then a status report. **This is the cron entrypoint.** Exit code 1 if any stage failed. |
+| `discover` / `leaderboard` / `tables` / `replays` / `submissions` / `stats` | run a single stage |
+| `status` | row counts, freshest `played_at` (lag), replay backlog, ingest state |
+
+Backfill and incremental are the same command: the first `run` walks all of
+history (resumable — a killed run continues from the persisted cursor); later
+runs stop after a few pages of already-known hands and only backfill missing
+replays (`raw.tables LEFT JOIN raw.replays`).
+
+## Deploy on the server
+
+The DB runs in Docker on the server; the loader connects via the DSN — start
+Postgres with `-p 127.0.0.1:5432:5432` (or put the loader in the same compose
+network) and point `ARENA_RAW_DB_URL` at it.
+
+```bash
+# on the server
+sudo mkdir -p /opt/arena-etl && sudo chown $USER /opt/arena-etl
+rsync -av --exclude .venv --exclude .env etl/ server:/opt/arena-etl/
+ssh server 'cd /opt/arena-etl && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt'
+# create /opt/arena-etl/.env with the real DSN, then backfill once:
+ssh server 'cd /opt/arena-etl && .venv/bin/python arena_etl.py run'
+```
+
+Then schedule hourly (PRD §9) with **one** of:
+
+- systemd (recommended — start the timer early; leaderboard history only
+  accrues while polling runs):
+  ```bash
+  sudo cp deploy/arena-etl.service deploy/arena-etl.timer /etc/systemd/system/
+  # edit User= and paths in arena-etl.service if they differ
+  sudo systemctl daemon-reload && sudo systemctl enable --now arena-etl.timer
+  journalctl -u arena-etl.service -f     # logs
+  ```
+- cron: see `deploy/crontab.example`.
+
+## Monitoring
+
+`arena_etl.py status` (also printed at the end of every `run`) shows row
+counts per table, the freshest hand timestamp vs. now (ingest lag), the
+replay backlog, and per-endpoint ingest state. Every stage logs
+`seen / inserted` counts, so a healthy incremental run reads like:
+`tables[…]: done — 4 pages, 400 seen, 37 new`.
