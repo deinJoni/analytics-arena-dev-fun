@@ -1,0 +1,221 @@
+# PRD — Arena Heads-Up Ladder: Front-End App (v1 Scaffold)
+
+**Status:** Draft v1
+**Companion to:** `PRD_arena_raw_ingestion.md` (raw landing), `PRD_arena_analytics.md` (mart layer)
+**Scope:** A read-only web app rendering the five agreed views, deployed on Vercel, reading the `mart.*` tables through serverless functions over an IP-allowlisted Postgres connection.
+**Audience:** agent developers tuning bots. The app is a **diagnostic loop**, not a spectator overview.
+
+---
+
+## 1. Purpose & scope
+
+Ship the smallest thing that lets a bot developer run the full tuning loop end to end: *overview → where am I bleeding chips → show me those exact hands → what was my bot thinking → who exploits me.* Everything reads the pre-aggregated `mart` layer; the app does **no** poker math or aggregation of its own — that all lives upstream in the transform layer.
+
+**In scope (v1):** the five views, the serverless API that backs them, the Vercel deployment, the DB access path (allowlist + pooling + read-only role), caching, and a working scaffold repo layout.
+
+**Out of scope (v1):** writes of any kind, auth beyond a single access gate, the spectator/meta views (range grid, style map, ladder-race, luck-vs-skill), and any GTO/solver integration. See §12.
+
+## 2. The five views (recap)
+
+| # | View | Route | Job in the loop |
+|---|---|---|---|
+| 0 | Overview hub | `/` | Standings + roster + season status; the nav surface everything else hangs off. |
+| 1 | Agent dashboard | `/agents/[agentId]` | The bot's vitals — stats split by position, sample sizes visible. Entry to the drill-down. |
+| 2 | Leak / EV attribution | `/agents/[agentId]/leaks` | The money map. Where chips are won/lost by spot; headline `mirror_delta_bb`. |
+| 3 | Hand replayer + browser | `/hands/[handId]`, `/hands` | The debugger. Step through hands with reasoning; mirror hand side-by-side. |
+| 4 | Head-to-head | `/matchups`, `/matchups/[a]/[b]` | Which rival exploits you, and in which spots. |
+
+Navigation is the loop: a leak row in View 2 deep-links into the hands that caused it (View 3); an agent cell in View 0 or a matchup in View 4 opens View 1. Every table row that names an agent, hand, or matchup is a link.
+
+## 3. Architecture
+
+Three tiers, DB never exposed to the browser:
+
+```
+Browser (React, static + client)                     ── Vercel CDN/edge
+      │  fetch /api/*
+      ▼
+Serverless functions (Next.js Route Handlers)        ── Vercel Functions, Node runtime, pinned region
+      │  pg over TLS, via transaction pooler
+      ▼
+Postgres  (mart schema, read-only role, IP-allowlisted)  ── your remote DB
+```
+
+Why the middle tier (this is the "clearest form" you described): the browser never holds DB credentials or opens DB connections; the functions are the only thing the database trusts; and the functions are where we do connection pooling, the IP allowlist, and query shaping. The functions are thin — parameterized SQL against `mart`, JSON out.
+
+## 4. Tech stack
+
+- **Next.js (App Router) + TypeScript.** One deployment gives both the React frontend and the serverless functions (Route Handlers under `/app/api/**` *are* Vercel Functions). This is the cleanest fit for "Vercel + serverless functions" and avoids a second service.
+- **Node runtime for API routes** (not Edge): the Edge runtime can't open raw TCP to Postgres and can't route through the static-IP path the same way. Pin `export const runtime = 'nodejs'` on every DB-touching route.
+- **`pg`** (node-postgres) as the driver, a single module-scoped pool per function instance (§5.3).
+- **TanStack Query** for client-side fetching/caching (stale-while-revalidate against the API).
+- **Charts:** Recharts for the standard bar/line/heatmap work; drop to `visx`/`d3` only where a bespoke visual (e.g. the leak waterfall, matchup matrix) needs it.
+- **Tailwind** for styling; a small set of hand-rolled primitives (table, stat card, card grid) rather than a heavy component kit.
+
+Alternative if you'd rather keep the frontend a pure SPA: Vite React app + standalone Vercel Functions in `/api`. It works, but it's two mental models and duplicate config; Next.js is recommended for v1.
+
+## 5. Deployment & networking (the load-bearing section)
+
+The DB is reached only by the serverless functions, over TLS, using a strong-secret read-only role. We are **not** IP-allowlisting — that is the decided model (§5.1). Security therefore rests entirely on transport encryption, credentials, and a tightly scoped role. Get these four things right or the app is either unreachable or unsafe.
+
+### 5.1 Access model — strong auth over TLS (DECIDED)
+No IP allowlist. Vercel functions egress from a **rotating** IP range that can't be reliably allowlisted, and the native fix (Vercel Static IPs, ~$100/mo, Pro/Enterprise only) isn't worth it for v1. Because the data is **public tournament data** and the role is **read-only**, an internet-reachable database guarded by TLS + strong credentials + a scoped role is an acceptable posture: the worst case if the secret leaks is a read of already-public numbers.
+
+The trade-off we knowingly accept: the DB/pooler port is reachable from the internet, so the DoS / brute-force surface is larger than an allowlist would leave — blunted in §5.2. Allowlisting (via Static IPs or a SOCKS/TCP proxy) stays the documented upgrade path if the DB ever holds sensitive data or needs a smaller attack surface; not in v1.
+
+### 5.2 Hardening the internet-reachable endpoint (mandatory, not optional)
+With no IP gate, each of these is load-bearing:
+- **TLS required and verified.** The server rejects non-SSL connections (`hostssl` only in `pg_hba.conf`; no plaintext `host` lines). The client connects with `sslmode=verify-full` **and the server CA** — in `pg` that's `ssl: { ca: <CA_PEM>, rejectUnauthorized: true }`. `verify-full` (not merely `require`) is what stops a MITM from impersonating the database; `require` alone encrypts but doesn't authenticate the server.
+- **SCRAM password auth.** `scram-sha-256` for the app role in `pg_hba.conf` — never `md5`, `password`, or `trust`.
+- **Strong, rotatable secret.** Long random password for `app_readonly`, stored only in Vercel env, rotated on a schedule and on any suspected leak.
+- **Brute-force blunting.** Because the port is public, add rate-limiting / fail2ban (or the pooler's equivalent) on repeated auth failures and alert on auth-failure spikes. This is the one thing an allowlist would have given you for free, so it's the item most likely to be forgotten.
+- **Least exposure.** Only the pooler port is publicly reachable; Postgres itself binds to localhost/private and is reached solely by the pooler. Disable remote superuser login. (A non-default port is minor defense-in-depth, not a control.)
+
+### 5.3 Connection pooling (the #1 thing that breaks serverless→Postgres)
+Each function invocation can open its own DB connection; under any concurrency this exhausts Postgres `max_connections`. Mitigations, all of which we apply:
+- Put a **transaction-mode pooler in front of the DB** (PgBouncer or Supavisor). **This pooler is the only public endpoint**, so it must itself terminate/enforce TLS + SCRAM (per §5.2) — not proxy plaintext in front of a TLS Postgres.
+- Reuse a **module-scoped `pg.Pool`** so warm function instances share connections; keep `max` small (2–5).
+- Prefer Vercel **Fluid compute** if available on your plan (keeps instances warm and lets them share connections) — verify current availability.
+
+### 5.4 DB role & secrets
+- A dedicated role `app_readonly` with `USAGE` on schema `mart` and `SELECT` on `mart.*` only — no access to `raw`/`stg`/`int`, no write. Also `REVOKE ALL ON DATABASE … FROM PUBLIC` and set `ALTER DEFAULT PRIVILEGES IN SCHEMA mart GRANT SELECT … TO app_readonly` so tables added by future mart refreshes are covered automatically. This bounds blast radius: a leaked secret buys a read of public data and nothing more.
+- Secrets (connection string, pooler host, password, CA cert) live in Vercel **Environment Variables** (Production/Preview/Development scoped), never in the repo. Never expose any to the client: no `NEXT_PUBLIC_` prefix, and DB access runs only in Route Handlers / server code, never a client component.
+
+## 6. API surface
+
+Thin JSON endpoints, one small SQL query each against `mart`. All are `GET`, Node runtime, parameterized. Shapes below are the response contracts.
+
+### View 0 — Overview
+```
+GET /api/season      -> { summary: SeasonSummary, handsOverTime: HandsPoint[] }   // mart.season_summary, mart.hands_over_time
+GET /api/leaderboard -> LeaderboardRow[]                                          // mart.leaderboard, ordered by rank
+```
+```ts
+interface LeaderboardRow {
+  agentId: string; agentName: string; agentHandle: string;
+  rank: number; trueskillMu: number; trueskillSigma: number;
+  handsPlayed: number; blocksPlayed: number; completedPairs: number; distinctOpponents: number;
+  rawBbPer100: number; dupAdjBbPer100: number; evAdjBbPer100: number;
+  netChips: number; rankDelta7d: number | null;
+}
+```
+
+### View 1 — Agent dashboard
+```
+GET /api/agents/[agentId]/stats -> { header: LeaderboardRow, splits: AgentStatsSplit[] }  // mart.leaderboard + mart.agent_stats
+```
+`splits` carries the `ALL` / `IP` / `OOP` rows, each with its own `sampleN` so the UI can grey out thin numbers.
+
+### View 2 — Leaks
+```
+GET /api/agents/[agentId]/leaks?position=&street=&texture=&minSampleN=  -> LeakRow[]        // mart.agent_leaks
+```
+Default sort: most-negative `mirrorDeltaBb` first, filtered to `sampleN >= minSampleN` (default e.g. 30). Each row is deep-linkable to the hand browser pre-filtered to that spot.
+```ts
+interface LeakRow {
+  position: 'IP'|'OOP'; street: string; boardTexture: string|null; line: string;
+  sampleN: number; bbPer100Spot: number; evBbPer100Spot: number; mirrorDeltaBb: number;
+}
+```
+
+### View 3 — Hand browser + replayer
+```
+GET /api/hands?agentId=&opponentId=&street=&minPotBb=&showdownOnly=&flagged=&limit=&cursor=  -> { hands: HandListRow[], nextCursor: string|null }
+GET /api/hands/[handId]  -> { header: HandHeader, steps: HandStep[], mirror: { header: HandHeader, steps: HandStep[] } | null }  // mart.hand_header + mart.hand_step (+ mirror_hand_id)
+```
+The replayer response includes the **mirror hand** when present, so the UI can show two bots playing the identical deck side by side.
+```ts
+interface HandStep {
+  sequence: number; street: string; actorAgentId: string; actorName: string; isButton: boolean;
+  action: string; sizeBb: number|null; sizePotFraction: number|null;
+  potBefore: number; potAfter: number; stackBefore: number; boardSoFar: string[];
+  equityAtDecision: number|null; reasoningText: string|null;
+}
+```
+
+### View 4 — Head-to-head
+```
+GET /api/matchups                 -> MatchupCell[]                     // mart.matchups, for the matrix/heatmap
+GET /api/matchups/[aId]/[bId]     -> MatchupDetail                     // one matchup + spotDeltas jsonb
+```
+
+**Query rules (all endpoints):** parameterized only (no string interpolation), hard `LIMIT` on every list query, `agentId`/`handId` validated against a cuid shape before hitting the DB, and a fixed `competition_id` filter (S1) applied server-side so the app can't accidentally read another competition.
+
+## 7. View specifications
+
+### View 0 — Overview hub (`/`)
+Standings table (sortable by rank / dup-adj bb/100 / EV-adj bb/100 / hands), a season header (total agents, hands, blocks, completed pairs, status), and a cumulative-hands sparkline. Every agent row links to its dashboard. Calls `/api/season` + `/api/leaderboard`. This is the app shell — the persistent nav/agent-selector lives here.
+
+### View 1 — Agent dashboard (`/agents/[agentId]`)
+Identity + rank + rating header, then the stat line as three columns (ALL / IP / OOP): VPIP, PFR, 3-bet, fold-to-3-bet, c-bet & fold-to-c-bet by street, check-raise, WTSD/W$SD/WWSF, aggression factor, sizing histogram, bb/100. Each cell shows or greys by `sampleN`. Prominent buttons through to **Leaks** and **Head-to-head** for this agent. Calls `/api/agents/[id]/stats`.
+
+### View 2 — Leak / EV attribution (`/agents/[agentId]/leaks`)
+The money map. A sortable/filterable table (position × street × board_texture × line) with `bbPer100Spot`, `evBbPer100Spot`, and the headline `mirrorDeltaBb`, plus a leak-magnitude visual (waterfall or ranked bars) surfacing the worst buckets. Filters for position/street/texture. Each row → hand browser pre-filtered to that spot. Copy near `mirrorDeltaBb` should note it's duplicate-differenced (a real leak, not variance) and that spot-level attribution is directional (see analytics PRD §7.3). Calls `/api/agents/[id]/leaks`.
+
+### View 3 — Hand replayer + browser (`/hands`, `/hands/[handId]`)
+Browser: filterable, paginated hand table (agent, opponent, pot size, showdown, flagged). Replayer: step through actions with both hole cards face-up, running pot/stacks/board from each step, the parsed `reasoningText` at each decision, and `equityAtDecision` shown as a post-hoc "how strong was this actually" readout (labeled omniscient, not a GTO score). The signature element: a **mirror toggle** rendering the partner hand beside it so a dev can diff the two bots' lines and reasoning on identical cards. Calls `/api/hands` and `/api/hands/[id]`.
+
+### View 4 — Head-to-head (`/matchups`, `/matchups/[a]/[b]`)
+Matrix/heatmap of agent × agent dup-adj bb/100 (View 0/1 link in). Detail page: blocks, completed pairs, A's dup-adj vs B, win rate, and the top +/- `spotDeltas` vs *this* opponent — the targeted-fix view. Calls `/api/matchups` and `/api/matchups/[a]/[b]`.
+
+## 8. Caching & freshness
+
+The `mart` layer refreshes on a cadence (minutes), so responses are safely cacheable:
+- **Server:** set `Cache-Control: s-maxage=60, stale-while-revalidate=300` on list endpoints (leaderboard, matchups) so the CDN absorbs repeat load; shorter or `no-store` on a single hand (cheap, and devs want it fresh).
+- **Client:** TanStack Query `staleTime` ~60s so navigating the loop doesn't refetch constantly.
+- Display the mart's `last_updated` in the header so a dev knows how fresh the numbers are.
+
+## 9. Non-functional requirements
+
+- **Access gate:** the app is an internal dev tool; put it behind a single gate (Vercel password protection, or a shared-secret middleware check) rather than per-user auth in v1.
+- **Security:** read-only DB role (§5.4), parameterized queries only, secrets in env, competition scoped server-side, no DB error text leaked to the client.
+- **Loading/empty/error states:** every view needs a skeleton, an empty state (thin sample / no data yet), and a graceful API-error state. Thin-sample greying is a first-class UI state, not an afterthought.
+- **Performance budget:** each API route one indexed query; list routes always `LIMIT`ed and cursor-paginated; target < 300 ms warm server response.
+- **Accessibility & responsive:** the replayer and matrix must be usable on a laptop; mobile is nice-to-have for v1.
+
+## 10. Scaffold — repo layout
+
+```
+/app
+  layout.tsx  page.tsx                         # View 0 (hub)
+  agents/[agentId]/page.tsx                     # View 1
+  agents/[agentId]/leaks/page.tsx               # View 2
+  hands/page.tsx  hands/[handId]/page.tsx       # View 3 (browser + replayer)
+  matchups/page.tsx  matchups/[a]/[b]/page.tsx  # View 4
+  api/
+    season/route.ts  leaderboard/route.ts
+    agents/[agentId]/stats/route.ts
+    agents/[agentId]/leaks/route.ts
+    hands/route.ts  hands/[handId]/route.ts
+    matchups/route.ts  matchups/[a]/[b]/route.ts
+/lib
+  db.ts            # module-scoped pg.Pool -> pooler host; nodejs runtime
+  queries/*.ts     # one parameterized SQL per endpoint, mart-only
+  types.ts         # shared response interfaces (§6)
+  validate.ts      # cuid/param guards
+/components
+  charts/  tables/  replayer/  stat-card.tsx  agent-link.tsx
+```
+Every `api/**/route.ts` sets `export const runtime = 'nodejs'` and imports the shared pool from `lib/db.ts`. SQL lives in `lib/queries` so the endpoints stay thin and the mart contract is auditable in one place.
+
+## 11. Build order (thin vertical slices)
+
+1. **Plumbing slice:** `lib/db.ts` (TLS `verify-full` + CA, module-scoped pool) → pooler (TLS/SCRAM) → `app_readonly` role → `/api/leaderboard` → View 0 table rendering live data. Proves the entire secured pipe end to end before any view depth.
+2. **View 1** (agent dashboard) — most reused components (stat card, position split).
+3. **View 3** (replayer + browser) — the signature view; includes the mirror toggle.
+4. **View 2** (leaks) — deep-links into View 3.
+5. **View 4** (head-to-head) — mostly falls out of `mart.matchups`.
+6. Caching, access gate, error/empty states, polish.
+
+## 12. Open questions / assumptions
+
+1. **DB access model — RESOLVED:** strong auth over TLS, no IP allowlist (§5.1). No Vercel plan-tier dependency; the app can run on Hobby. Remaining action is executing the §5.2 hardening checklist, not a decision.
+2. **Pooler** — self-hosted PgBouncer vs a managed pooler (Supavisor/pooler bundled with your DB host). Affects the connection string, and this pooler is now the public TLS/SCRAM endpoint (§5.3), so its own auth config is in scope.
+3. **Access model** — single gate assumed; confirm no per-user accounts are needed in v1.
+4. **Hand browser scope** — assumed in v1 as the feed for the replayer; confirm the filter set (pot size, showdown, "flagged" definition).
+5. **Region** — pin functions + static IP to the region nearest the DB to hold latency and Private Data Transfer down; confirm DB region.
+6. **Deployment target portability** — PRD assumes Vercel; the same three-tier shape ports to Netlify/Cloudflare/AWS with a different static-egress mechanism if you switch.
+
+## 13. Out of scope (v1)
+
+Writes, per-user auth, the four spectator/meta views (range grid, style map, ladder-race bump chart, luck-vs-skill scatter), solver/GTO comparison, and range-based decision scoring. Natural follow-ons once the diagnostic core is live.

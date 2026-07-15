@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+/* Dark-only dev tool: table-felt greens under near-black, card-stock ivory ink,
+   brass accent. Data polarity (win/loss) is the validated blue<->red diverging pair. */
+:root {
+  color-scheme: dark;
+  --bg: #0a0d0b;
+  --surface: #10140f;
+  --surface-2: #171c15;
+  --line: #232a21;
+  --ink: #edeee6;
+  --ink-2: #adb3a3;
+  --ink-3: #78806f;
+  --accent: #cfa04d;
+  --pos: #3987e5;
+  --neg: #e66767;
+  --good: #0ca30c;
+  --felt: #16351f;
+  --felt-edge: #2a5232;
+  --card-face: #f3f0e4;
+  --suit-red: #c23b3b;
+  --suit-black: #23261f;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink-2);
+  --color-ink3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-pos: var(--pos);
+  --color-neg: var(--neg);
+  --color-good: var(--good);
+  --color-felt: var(--felt);
+  --color-feltedge: var(--felt-edge);
+  --color-cardface: var(--card-face);
+  --color-suitred: var(--suit-red);
+  --color-suitblack: var(--suit-black);
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-plex), ui-monospace, monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: rgba(207, 160, 77, 0.28);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* shared primitives */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: right;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.data-table th.left,
+.data-table td.left {
+  text-align: left;
+}
+.data-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+.data-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+.skeleton {
+  background: var(--surface-2);
+  border-radius: 4px;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
