@@ -1,0 +1,35 @@
+# Arena raw-ingestion Postgres — runs alongside the legacy `poker-db` (jh_poker).
+# LOCAL ONLY: bound to 127.0.0.1 so it is not reachable from outside the host.
+# The ETL (etl/arena_etl.py) connects over the host port via ARENA_RAW_DB_URL.
+#
+#   cd db && docker compose up -d
+#
+# Password lives in db/.env (gitignored). schema.sql is applied automatically on
+# first init; the ETL also re-applies it idempotently on every run.
+name: arena-db
+
+services:
+  db:
+    image: postgres:18
+    container_name: arena-db
+    restart: unless-stopped
+    shm_size: "256mb"
+    environment:
+      POSTGRES_USER: arena
+      POSTGRES_DB: arena
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in db/.env}
+    ports:
+      # host-local only — NOT 0.0.0.0. Change to expose externally later.
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      # applied once on an empty data dir; idempotent (IF NOT EXISTS everywhere)
+      - ../etl/schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arena -d arena"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
