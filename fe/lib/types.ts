@@ -45,6 +45,20 @@ export interface LeaderboardRow {
   lastUpdated: string;
 }
 
+// One captured point of an agent's ladder position over time (mart.rank_history).
+// `rank` is the arena.dev.fun ordering (position by totalScore DESC) at that snapshot.
+export interface RankHistoryPoint {
+  capturedAt: string;
+  rank: number | null;
+  totalScore: number | null;
+  fieldSize: number | null;
+}
+
+export interface RankHistoryResponse {
+  agentId: string;
+  points: RankHistoryPoint[];
+}
+
 // One ALL / IP / OOP row of mart.agent_stats.
 export interface AgentStatsSplit {
   position: "ALL" | "IP" | "OOP";

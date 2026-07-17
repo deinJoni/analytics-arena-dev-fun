@@ -784,17 +784,28 @@ ev AS (
     FROM int.hand_equity e JOIN stg.hands h USING (hand_id)
     WHERE h.competition_id = %(cid)s GROUP BY 1
 ),
+-- Ladder rank = position when the whole board is ordered by total_score DESC —
+-- the order arena.dev.fun shows. The API's own `rank` field is a global dev.fun
+-- platform rank across all arenas (not this ladder), so we recompute it here.
 lb_now AS (
-    SELECT DISTINCT ON (agent_id) agent_id, rank, total_score,
-           payload ->> 'name' AS name, payload ->> 'handle' AS handle
-    FROM raw.leaderboard_history WHERE arena_id = %(cid)s
-    ORDER BY agent_id, captured_at DESC
+    SELECT agent_id, total_score, name, handle,
+           row_number() OVER (ORDER BY total_score DESC NULLS LAST) AS rank
+    FROM (
+        SELECT DISTINCT ON (agent_id) agent_id, total_score,
+               payload ->> 'name' AS name, payload ->> 'handle' AS handle
+        FROM raw.leaderboard_history WHERE arena_id = %(cid)s
+        ORDER BY agent_id, captured_at DESC
+    ) latest
 ),
 lb_7d AS (
-    SELECT DISTINCT ON (agent_id) agent_id, rank, total_score
-    FROM raw.leaderboard_history
-    WHERE arena_id = %(cid)s AND captured_at <= now() - interval '7 days'
-    ORDER BY agent_id, captured_at DESC
+    SELECT agent_id, total_score,
+           row_number() OVER (ORDER BY total_score DESC NULLS LAST) AS rank
+    FROM (
+        SELECT DISTINCT ON (agent_id) agent_id, total_score
+        FROM raw.leaderboard_history
+        WHERE arena_id = %(cid)s AND captured_at <= now() - interval '7 days'
+        ORDER BY agent_id, captured_at DESC
+    ) latest7
 ),
 names AS (
     SELECT DISTINCT ON (s.agent_id) s.agent_id, s.agent_name, s.agent_handle
@@ -1088,6 +1099,43 @@ INSERT INTO mart.hands_over_time (competition_id, bucket_ts, hands_in_bucket,
 SELECT %(cid)s, bucket_ts, n, sum(n) OVER (ORDER BY bucket_ts), agents FROM b
 """
 
+# Per-snapshot ladder position over time (Overview rank-history drill-down).
+# raw.leaderboard_history is append-on-change, so at any captured_at only the
+# agents that moved have a row; to rank the *whole* board at that instant we
+# carry-forward each agent's last-known total_score (LATERAL as-of lookup),
+# then row_number() by total_score DESC — the same ordering as mart.leaderboard.
+# Full rebuild per run; trivial at current depth (a few dozen snapshots).
+RANK_HISTORY_SQL = """
+WITH snaps AS (
+    SELECT DISTINCT captured_at
+    FROM raw.leaderboard_history WHERE arena_id = %(cid)s
+),
+board AS (
+    SELECT DISTINCT agent_id
+    FROM raw.leaderboard_history WHERE arena_id = %(cid)s
+),
+asof AS (
+    SELECT s.captured_at, b.agent_id, lh.total_score
+    FROM snaps s
+    CROSS JOIN board b
+    JOIN LATERAL (
+        SELECT h.total_score
+        FROM raw.leaderboard_history h
+        WHERE h.arena_id = %(cid)s AND h.agent_id = b.agent_id
+          AND h.captured_at <= s.captured_at
+        ORDER BY h.captured_at DESC
+        LIMIT 1
+    ) lh ON true
+    WHERE lh.total_score IS NOT NULL
+)
+INSERT INTO mart.rank_history (competition_id, agent_id, captured_at,
+    total_score, rank, field_size)
+SELECT %(cid)s, agent_id, captured_at, total_score,
+       row_number() OVER (PARTITION BY captured_at ORDER BY total_score DESC),
+       count(*)     OVER (PARTITION BY captured_at)
+FROM asof
+"""
+
 # Marts rebuilt in full per competition each run (small at this scale);
 # hand_header/hand_step are the incremental exceptions above.
 MART_REBUILDS = [
@@ -1097,6 +1145,7 @@ MART_REBUILDS = [
     ("mart.matchups", MATCHUPS_SQL),
     ("mart.season_summary", SEASON_SUMMARY_SQL),
     ("mart.hands_over_time", HANDS_OVER_TIME_SQL),
+    ("mart.rank_history", RANK_HISTORY_SQL),
 ]
 
 # ---------------------------------------------------------------------------
@@ -1330,7 +1379,7 @@ TRUNCATE_TABLES = [
     "int.board_texture", "int.hand_features", "int.hand_street_lines",
     "mart.hand_header", "mart.hand_step", "mart.leaderboard",
     "mart.agent_stats", "mart.agent_leaks", "mart.matchups",
-    "mart.season_summary", "mart.hands_over_time",
+    "mart.season_summary", "mart.hands_over_time", "mart.rank_history",
 ]
 
 
@@ -1364,7 +1413,7 @@ def print_status(conn):
               "int.hand_features", "int.hand_street_lines", "int.equity_cache",
               "mart.leaderboard", "mart.agent_stats", "mart.agent_leaks",
               "mart.hand_header", "mart.hand_step", "mart.matchups",
-              "mart.season_summary", "mart.hands_over_time"]
+              "mart.season_summary", "mart.hands_over_time", "mart.rank_history"]
     with conn.cursor() as cur:
         print(f"{'table':<28} {'rows':>10}")
         for t in tables:

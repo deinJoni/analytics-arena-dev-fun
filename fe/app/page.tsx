@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useApi } from "@/lib/api";
 import type { LeaderboardRow, SeasonResponse } from "@/lib/types";
 import { chipsToBb, fmt1, fmtBb, fmtNum, signClass, timeAgo } from "@/lib/format";
 import { AgentLink } from "@/components/agent-link";
 import { HandsSparkline } from "@/components/charts/hands-sparkline";
+import { RankTrajectory } from "@/components/charts/rank-trajectory";
 import { Empty, ErrorState, SampleBadge, StatChip, TableSkeleton } from "@/components/ui";
 
 type SortKey = "rank" | "dupAdjBbPer100" | "evAdjBbPer100" | "rawBbPer100" | "handsPlayed";
@@ -19,23 +20,44 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "handsPlayed", label: "Hands" },
 ];
 
+// Number of <td> in a standings row — the expansion row spans all of them.
+const COL_SPAN = 11;
+
 export default function OverviewPage() {
   const season = useApi<SeasonResponse>("/api/season");
   const board = useApi<LeaderboardRow[]>("/api/leaderboard");
   const [sortKey, setSortKey] = useState<SortKey>("rank");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Ladder rank = position when the field is ordered by the arena.dev.fun score
+  // (totalScore = trueskillMu), highest first. Computed here so it always
+  // matches the live site regardless of the sort the user picks. Agents without
+  // a score yet are unranked.
+  const scoreRank = useMemo(() => {
+    const scored = (board.data ?? []).filter((r) => r.trueskillMu !== null);
+    scored.sort((a, b) => (b.trueskillMu as number) - (a.trueskillMu as number));
+    const m = new Map<string, number>();
+    scored.forEach((r, i) => m.set(r.agentId, i + 1));
+    return m;
+  }, [board.data]);
 
   const rows = useMemo(() => {
     const list = [...(board.data ?? [])];
     list.sort((a, b) => {
+      if (sortKey === "rank") {
+        const ar = scoreRank.get(a.agentId) ?? Infinity;
+        const br = scoreRank.get(b.agentId) ?? Infinity;
+        return ar - br;
+      }
       const av = a[sortKey];
       const bv = b[sortKey];
       if (av === null && bv === null) return 0;
       if (av === null) return 1;
       if (bv === null) return -1;
-      return sortKey === "rank" ? av - bv : bv - av;
+      return bv - av;
     });
     return list;
-  }, [board.data, sortKey]);
+  }, [board.data, sortKey, scoreRank]);
 
   const s = season.data?.summary;
 
@@ -100,7 +122,12 @@ export default function OverviewPage() {
 
       <section className="card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
-          <p className="eyebrow">standings</p>
+          <div>
+            <p className="eyebrow">standings</p>
+            <p className="mt-0.5 text-xs text-ink3">
+              ranked by the live arena.dev.fun score · click a rank to see its history
+            </p>
+          </div>
           <div className="flex items-center gap-1">
             <span className="mr-1 text-xs text-ink3">sort</span>
             {SORTS.map((sOpt) => (
@@ -132,10 +159,11 @@ export default function OverviewPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th title="ladder position — order shown on arena.dev.fun (by score). Click to see history.">
+                    #
+                  </th>
                   <th className="left">Agent</th>
-                  <th>score</th>
-                  <th title="rank 7 days ago minus rank now (positive = climbed)">Δ7d</th>
+                  <th title="arena.dev.fun TrueSkill score — the ladder's ranking metric">score</th>
                   <th>hands</th>
                   <th>blocks</th>
                   <th title="completed mirror pairs — the sample behind dup-adj">pairs</th>
@@ -151,35 +179,58 @@ export default function OverviewPage() {
               <tbody>
                 {rows.map((r) => {
                   const thinPairs = (r.completedPairs ?? 0) < 30;
+                  const rank = scoreRank.get(r.agentId) ?? null;
+                  const isOpen = expandedId === r.agentId;
                   return (
-                    <tr key={r.agentId}>
-                      <td className="num text-ink3">{r.rank ?? "—"}</td>
-                      <td className="left">
-                        <AgentLink agentId={r.agentId} name={r.agentName} handle={r.agentHandle} />
-                      </td>
-                      <td className="num">{fmt1(r.trueskillMu)}</td>
-                      <td className={`num ${signClass(r.rankDelta7d)}`}>
-                        {r.rankDelta7d === null ? "—" : fmtBb(r.rankDelta7d, 0)}
-                      </td>
-                      <td className="num">{fmtNum(r.handsPlayed)}</td>
-                      <td className="num">{fmtNum(r.blocksPlayed)}</td>
-                      <td className="num">
-                        <span className="mr-1">{fmtNum(r.completedPairs)}</span>
-                        <SampleBadge n={r.completedPairs} />
-                      </td>
-                      <td className="num">{fmtNum(r.distinctOpponents)}</td>
-                      <td className={`num ${signClass(r.rawBbPer100)}`}>{fmtBb(r.rawBbPer100)}</td>
-                      <td
-                        className={`num font-medium ${thinPairs ? "opacity-40" : ""} ${signClass(r.dupAdjBbPer100)}`}
-                        title={thinPairs ? "thin sample — read with caution" : undefined}
-                      >
-                        {fmtBb(r.dupAdjBbPer100)}
-                      </td>
-                      <td className={`num ${signClass(r.evAdjBbPer100)}`}>{fmtBb(r.evAdjBbPer100)}</td>
-                      <td className={`num ${signClass(r.netChips)}`}>
-                        {r.netChips === null ? "—" : fmtBb(chipsToBb(r.netChips), 0)}
-                      </td>
-                    </tr>
+                    <Fragment key={r.agentId}>
+                      <tr className={isOpen ? "bg-surface/40" : undefined}>
+                        <td className="num text-ink3">
+                          <button
+                            onClick={() => setExpandedId(isOpen ? null : r.agentId)}
+                            className="inline-flex items-center gap-1 rounded px-1 hover:text-accent"
+                            title="Show rank history"
+                            aria-expanded={isOpen}
+                          >
+                            <span
+                              className={`transition-transform ${isOpen ? "rotate-90 text-accent" : "text-ink3"}`}
+                              aria-hidden
+                            >
+                              ›
+                            </span>
+                            <span>{rank ?? "—"}</span>
+                          </button>
+                        </td>
+                        <td className="left">
+                          <AgentLink agentId={r.agentId} name={r.agentName} handle={r.agentHandle} />
+                        </td>
+                        <td className="num">{fmt1(r.trueskillMu)}</td>
+                        <td className="num">{fmtNum(r.handsPlayed)}</td>
+                        <td className="num">{fmtNum(r.blocksPlayed)}</td>
+                        <td className="num">
+                          <span className="mr-1">{fmtNum(r.completedPairs)}</span>
+                          <SampleBadge n={r.completedPairs} />
+                        </td>
+                        <td className="num">{fmtNum(r.distinctOpponents)}</td>
+                        <td className={`num ${signClass(r.rawBbPer100)}`}>{fmtBb(r.rawBbPer100)}</td>
+                        <td
+                          className={`num font-medium ${thinPairs ? "opacity-40" : ""} ${signClass(r.dupAdjBbPer100)}`}
+                          title={thinPairs ? "thin sample — read with caution" : undefined}
+                        >
+                          {fmtBb(r.dupAdjBbPer100)}
+                        </td>
+                        <td className={`num ${signClass(r.evAdjBbPer100)}`}>{fmtBb(r.evAdjBbPer100)}</td>
+                        <td className={`num ${signClass(r.netChips)}`}>
+                          {r.netChips === null ? "—" : fmtBb(chipsToBb(r.netChips), 0)}
+                        </td>
+                      </tr>
+                      {isOpen && (
+                        <tr>
+                          <td colSpan={COL_SPAN} className="border-b border-line bg-surface/40 px-4 py-3">
+                            <RankTrajectory agentId={r.agentId} />
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   );
                 })}
               </tbody>

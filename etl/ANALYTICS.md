@@ -40,8 +40,9 @@ raw.replays ──(Python walker, per hand)──► stg.hands / stg.hand_seats 
 stg.* ──(SQL, set-based)──► int.mirror_pairs (+ int.pair_agent view)
 stg/int ──(SQL)──► mart.hand_header / mart.hand_step         (incremental)
                    mart.leaderboard / mart.season_summary /
-                   mart.hands_over_time / mart.agent_stats /
-                   mart.agent_leaks / mart.matchups           (full rebuild per run)
+                   mart.hands_over_time / mart.rank_history /
+                   mart.agent_stats / mart.agent_leaks /
+                   mart.matchups                              (full rebuild per run)
 ```
 
 * **Incremental**: the walker processes `raw.replays` with
@@ -164,7 +165,7 @@ the mirror-divergence attribution. Taxonomy (v1, deliberately compact):
 
 | View | Tables | Notes |
 |---|---|---|
-| 0 Overview | `leaderboard`, `season_summary`, `hands_over_time` | raw / dup-adj / EV-adj bb/100 side by side; server rank + `trueskill_mu` (= roster `totalScore`; the API exposes no sigma → NULL); 7d deltas from `raw.leaderboard_history` (needs polling coverage). Only agents with observed hands appear. |
+| 0 Overview | `leaderboard`, `season_summary`, `hands_over_time`, `rank_history` | raw / dup-adj / EV-adj bb/100 side by side; **`rank` = position by `total_score` DESC** (the arena.dev.fun ordering — the API's own `rank` field is a *global* dev.fun rank across all arenas, so it is recomputed here); `trueskill_mu` = roster `totalScore` (no sigma → NULL); 7d deltas from `raw.leaderboard_history` (needs polling coverage). `rank_history` = the same position through time (per-snapshot, full board carried-forward) for the Overview drill-down. Only agents with observed hands appear. |
 | 1 Agent dashboard | `agent_stats` | grain (competition, agent, position ∈ IP/OOP/ALL). Every rate's true denominator is in `opportunities` (jsonb) — **the UI must grey thin splits**. Sizing histogram buckets: %-of-pot 0-33 / 33-66 / 66-100 / 100+. AF = (bets+raises)/calls, AFq = aggr/(aggr+calls+folds), both postflop. |
 | 2 Leak map | `agent_leaks` | grain (competition, agent, position, street, texture, line); texture `'na'` for preflop (a PK can't hold NULL). `bb_per_100_spot`/`ev_bb_per_100_spot` = whole-hand result over hands where the agent took that line. **`mirror_delta_bb`** = avg (own result − counterpart's result on the identical deck) × 100 over deck-sides whose *first line divergence* was this spot, with `mirror_n` as its sample size. |
 | 3 Replayer | `hand_header`, `hand_step` | `mirror_hand_id` links the identical-deck partner for side-by-side diffing. Steps carry pot/stack/board from event snapshots (no re-simulation), omniscient `equity_at_decision`, parsed `reasoning_text` (63% of sample actions carry a strategy note). |

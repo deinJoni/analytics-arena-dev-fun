@@ -104,6 +104,18 @@ ssh server 'cd /opt/arena-etl && python3 -m venv .venv && .venv/bin/pip install 
 ssh server 'cd /opt/arena-etl && .venv/bin/python arena_etl.py run && .venv/bin/python arena_transform.py run'
 ```
 
+**Shipping new code = rsync + the next `run`; nothing else touches the DB.**
+`arena_transform.py` re-applies `schema_analytics.sql` on every command
+(`ensure_schema`), so new/changed mart tables are `CREATE …IF NOT EXISTS`-ed and
+the read-only web role is (re)granted automatically — the schema ends with a
+guarded `GRANT SELECT ON ALL TABLES IN SCHEMA mart TO app_readonly` that no-ops
+when the role is absent (local dev) and covers any table added since the last
+deploy when it is present (server). So after `rsync`-ing updated `etl/`, a plain
+`arena_transform.py run` (or just waiting for the hourly timer) creates,
+populates, and grants everything — no manual `CREATE`/`GRANT` step. Aggregate
+marts are rebuilt in full each run, so a schema change is picked up on the very
+next run with no backfill.
+
 Then schedule hourly (PRD §9) with **one** of:
 
 - systemd (recommended — start the timer early; leaderboard history only

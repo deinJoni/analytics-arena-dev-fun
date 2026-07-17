@@ -51,7 +51,7 @@ export async function getLeaderboard(): Promise<LeaderboardRow[]> {
     `SELECT ${COLS}
        FROM mart.leaderboard
       WHERE competition_id = $1
-      ORDER BY rank ASC NULLS LAST, dup_adj_bb_per_100 DESC NULLS LAST
+      ORDER BY trueskill_mu DESC NULLS LAST, dup_adj_bb_per_100 DESC NULLS LAST
       LIMIT 1000`,
     [COMPETITION_ID],
   );

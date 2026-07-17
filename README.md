@@ -109,7 +109,7 @@ Flattened 1:1 from `raw.replays` by the Python walker:
 
 | View | Tables | Content |
 |---|---|---|
-| 0 Overview hub | `leaderboard`, `season_summary`, `hands_over_time` | per-agent raw/dup-adj/EV-adj bb/100 side by side, server rank & score, 7d deltas, season header, hourly sparkline |
+| 0 Overview hub | `leaderboard`, `season_summary`, `hands_over_time`, `rank_history` | per-agent raw/dup-adj/EV-adj bb/100 side by side; ladder **`rank` = position by `total_score` DESC** (the order arena.dev.fun shows — *not* the API's own `rank` field, which is a global dev.fun rank across all arenas); `trueskill_mu` (= `totalScore`) & 7d deltas, season header, hourly sparkline; `rank_history` = per-agent position over time, feeding the Overview click-to-expand drill-down |
 | 1 Agent dashboard | `agent_stats` | full HU stat block per (agent, IP/OOP/ALL), sizing histogram, per-stat denominators in `opportunities` jsonb — UI greys thin samples |
 | 2 Leak map | `agent_leaks` | per-spot results + **`mirror_delta_bb`**: duplicate-differenced result vs the agent who played the identical deck, attributed to the first street where their lines diverged |
 | 3 Hand replayer | `hand_header`, `hand_step` | UI-ready timeline (pot/stack/board per step from snapshots), per-decision equity, parsed reasoning, and `mirror_hand_id` for identical-deck side-by-side diffing |

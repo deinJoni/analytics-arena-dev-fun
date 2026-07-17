@@ -331,8 +331,8 @@ CREATE TABLE IF NOT EXISTS mart.leaderboard (
     agent_id            text NOT NULL,
     agent_name          text,
     agent_handle        text,
-    rank                int,          -- server rank from raw.leaderboard_history (latest)
-    trueskill_mu        numeric,      -- payload.totalScore (the ladder exposes one TrueSkill-style number; no sigma)
+    rank                int,          -- ladder position = row_number() over total_score DESC (matches the order arena.dev.fun shows). NOT the API's own `rank` field, which is a global dev.fun platform rank across all arenas.
+    trueskill_mu        numeric,      -- payload.totalScore (the ladder exposes one TrueSkill-style number; no sigma). This is "the score" shown on arena.dev.fun and the sort key behind `rank`.
     trueskill_sigma     numeric,      -- NULL today: not exposed by the API
     hands_played        int,
     blocks_played       int,
@@ -342,7 +342,7 @@ CREATE TABLE IF NOT EXISTS mart.leaderboard (
     dup_adj_bb_per_100  numeric,      -- from completed mirror pairs only (luck-cancelled)
     ev_adj_bb_per_100   numeric,      -- all-in-EV-adjusted
     net_chips           bigint,
-    rank_delta_7d       int,          -- rank 7 days ago - rank now (positive = climbed)
+    rank_delta_7d       int,          -- ladder position 7 days ago - now (positive = climbed)
     mu_delta_7d         numeric,      -- totalScore now - 7 days ago
     last_updated        timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (competition_id, agent_id)
@@ -372,6 +372,26 @@ CREATE TABLE IF NOT EXISTS mart.hands_over_time (
     active_agents    int NOT NULL,
     PRIMARY KEY (competition_id, bucket_ts)
 );
+
+-- Per-snapshot ladder-position history, feeding the Overview "click a rank ->
+-- see its trajectory" drill-down. At each captured_at we reconstruct the full
+-- ladder (carry-forward each agent's last-known total_score) and rank by
+-- total_score DESC, so `rank` here means the same thing as mart.leaderboard.rank
+-- (arena.dev.fun's ordering) but through time. Forward-looking only: depth grows
+-- with loader uptime (raw.leaderboard_history starts when polling started).
+-- Rebuilt in full each run; cheap at current depth, windowable later for a long season.
+CREATE TABLE IF NOT EXISTS mart.rank_history (
+    competition_id text NOT NULL,
+    agent_id       text NOT NULL,
+    captured_at    timestamptz NOT NULL,
+    total_score    numeric,
+    rank           int,                          -- score-position at captured_at (1 = top total_score)
+    field_size     int,                          -- agents on the ladder at that snapshot (rank denominator)
+    PRIMARY KEY (competition_id, agent_id, captured_at)
+);
+
+COMMENT ON TABLE mart.rank_history IS
+  'View 0 drill-down: per-agent ladder-position over time. rank = row_number() over total_score DESC within each captured_at snapshot (matches arena.dev.fun). History accrues only while the loader polls (no past standings from the API).';
 
 -- ----------------------------------------------------------------------------
 -- View 1 — Agent dashboard. PRD §7.2.
@@ -494,3 +514,18 @@ CREATE TABLE IF NOT EXISTS mart.matchups (
 
 COMMENT ON TABLE mart.matchups IS
   'View 4: the block IS the matchup (one fixed A-vs-B head-to-head session). Materialized in both directions so the UI reads one row. spot_deltas = agent_leaks logic scoped to this opponent: exactly which rival exploits you, and where.';
+
+-- ----------------------------------------------------------------------------
+-- App role grants. The read-only web app connects as `app_readonly` (SELECT on
+-- mart.* only). That role is created out-of-band on the server and does NOT
+-- exist in local dev, so grant only when present. Idempotent and re-applied on
+-- every transform run (ensure_schema), so any new mart table added above is
+-- covered automatically — no manual GRANT step after a deploy.
+-- ----------------------------------------------------------------------------
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app_readonly') THEN
+        GRANT USAGE ON SCHEMA mart TO app_readonly;
+        GRANT SELECT ON ALL TABLES IN SCHEMA mart TO app_readonly;
+    END IF;
+END $$;
