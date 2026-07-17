@@ -87,6 +87,35 @@ export interface LeakRow {
   mirrorDeltaBb: number | null;
 }
 
+// Preflop strategy per starting combo ("AKs" / "T9o" / "QQ"), broken down by
+// decision node. Heads-up nodes: the button's first decision, the big blind
+// facing an open / a limp, and the button facing a 3-bet.
+export type RangeNode = "ip_first" | "oop_vs_open" | "oop_vs_limp" | "ip_vs_3bet";
+
+export interface RangeNodeAction {
+  action: string; // raise | call | fold | check
+  n: number;
+  bbPer100: number | null; // whole-hand result over hands where this action was taken
+  winRate: number | null;
+}
+
+export interface RangeCombo {
+  hand: string;
+  dealtN: number;
+  bbPer100: number | null; // whole-hand result over all dealt hands with this combo
+  winRate: number | null;
+  nodes: Partial<Record<RangeNode, RangeNodeAction[]>>;
+}
+
+// Bet-sizing distribution for one (street, position) split, %-of-pot buckets.
+export interface SizingSplit {
+  street: string; // Preflop | Flop | Turn | River
+  position: "IP" | "OOP";
+  total: number;
+  avgPotFraction: number | null;
+  buckets: Record<string, number>; // {"0-33": n, "33-66": n, "66-100": n, "100+": n}
+}
+
 export interface HandListRow {
   handId: string;
   mirrorHandId: string | null;

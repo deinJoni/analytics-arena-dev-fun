@@ -9,7 +9,7 @@ import { fmtBb, fmtNum, fmtPct, signClass } from "@/lib/format";
 import { MatchupMatrix, type MatrixAgent } from "@/components/charts/matchup-matrix";
 import { Empty, ErrorState, TableSkeleton } from "@/components/ui";
 
-const CAPS = [20, 40, 0] as const; // 0 = all
+const CAPS = [10, 20] as const;
 
 function MatchupsView() {
   const sp = useSearchParams();
@@ -35,19 +35,16 @@ function MatchupsView() {
         });
       }
     }
-    let list = [...seen.values()].sort(
+    const list = [...seen.values()].sort(
       (a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity),
     );
-    if (cap > 0) {
-      const kept = list.slice(0, cap);
-      // the focused agent always stays visible
-      if (focusId && !kept.some((a) => a.agentId === focusId)) {
-        const f = list.find((a) => a.agentId === focusId);
-        if (f) kept.push(f);
-      }
-      list = kept;
+    const kept = list.slice(0, cap);
+    // the focused agent always stays visible
+    if (focusId && !kept.some((a) => a.agentId === focusId)) {
+      const f = list.find((a) => a.agentId === focusId);
+      if (f) kept.push(f);
     }
-    return list;
+    return kept;
   }, [matchups.data, cap, focusId]);
 
   const tableRows = useMemo(() => {
@@ -84,7 +81,7 @@ function MatchupsView() {
                 cap === c ? "bg-surface2 text-accent" : "text-ink3 hover:text-ink2"
               }`}
             >
-              {c === 0 ? "all" : `top ${c}`}
+              top {c}
             </button>
           ))}
         </div>
@@ -117,65 +114,55 @@ function MatchupsView() {
                 {focusName ? `${focusName} — all opponents` : "strongest edges"}
               </p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th className="left">A</th>
-                    <th className="left">B</th>
-                    <th>blocks</th>
-                    <th>pairs</th>
-                    <th>hands</th>
-                    <th title="share of hands A won chips in">A win %</th>
-                    <th>A raw bb/100</th>
-                    <th title="the honest, luck-cancelled number">A dup-adj bb/100</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableRows.map((c) => {
-                    const thin = (c.completedPairs ?? 0) < 10;
-                    return (
-                      <tr key={`${c.agentAId}|${c.agentBId}`}>
-                        <td className="left">
-                          <Link href={`/agents/${c.agentAId}`} className="hover:text-accent">
-                            {c.agentAName}
-                          </Link>
-                        </td>
-                        <td className="left">
-                          <Link href={`/agents/${c.agentBId}`} className="hover:text-accent">
-                            {c.agentBName}
-                          </Link>
-                        </td>
-                        <td className="num">{fmtNum(c.blocks)}</td>
-                        <td className="num">{fmtNum(c.completedPairs)}</td>
-                        <td className="num">{fmtNum(c.hands)}</td>
-                        <td className="num">
-                          {c.aWinRate === null ? "—" : fmtPct(c.aWinRate * 100, 0)}
-                        </td>
-                        <td className={`num ${signClass(c.aRawBbPer100)}`}>
-                          {fmtBb(c.aRawBbPer100)}
-                        </td>
-                        <td
-                          className={`num font-medium ${thin ? "opacity-40" : ""} ${signClass(c.aDupAdjBbPer100)}`}
-                          title={thin ? "thin sample" : undefined}
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="left">A</th>
+                  <th className="left">B</th>
+                  <th title="completed mirror pairs — the sample behind dup-adj">pairs</th>
+                  <th title="share of hands A won chips in">A win %</th>
+                  <th title="the honest, luck-cancelled number">A dup-adj</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableRows.map((c) => {
+                  const thin = (c.completedPairs ?? 0) < 10;
+                  return (
+                    <tr key={`${c.agentAId}|${c.agentBId}`}>
+                      <td className="left max-w-32 truncate sm:max-w-none">
+                        <Link href={`/agents/${c.agentAId}`} className="hover:text-accent">
+                          {c.agentAName}
+                        </Link>
+                      </td>
+                      <td className="left max-w-32 truncate sm:max-w-none">
+                        <Link href={`/agents/${c.agentBId}`} className="hover:text-accent">
+                          {c.agentBName}
+                        </Link>
+                      </td>
+                      <td className="num">{fmtNum(c.completedPairs)}</td>
+                      <td className="num">
+                        {c.aWinRate === null ? "—" : fmtPct(c.aWinRate * 100, 0)}
+                      </td>
+                      <td
+                        className={`num font-medium ${thin ? "opacity-40" : ""} ${signClass(c.aDupAdjBbPer100)}`}
+                        title={thin ? "thin sample" : undefined}
+                      >
+                        {fmtBb(c.aDupAdjBbPer100)}
+                      </td>
+                      <td>
+                        <Link
+                          href={`/matchups/${c.agentAId}/${c.agentBId}`}
+                          className="font-mono text-[11px] text-ink3 hover:text-accent"
                         >
-                          {fmtBb(c.aDupAdjBbPer100)}
-                        </td>
-                        <td>
-                          <Link
-                            href={`/matchups/${c.agentAId}/${c.agentBId}`}
-                            className="font-mono text-[11px] text-ink3 hover:text-accent"
-                          >
-                            detail →
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          detail →
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </section>
         </>
       )}

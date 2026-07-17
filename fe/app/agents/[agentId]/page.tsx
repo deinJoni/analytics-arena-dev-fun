@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, use } from "react";
+import { Fragment, use, useMemo, useState } from "react";
 import { useApi } from "@/lib/api";
-import type { AgentStatsResponse, AgentStatsSplit } from "@/lib/types";
+import type { AgentStatsResponse, AgentStatsSplit, RangeCombo, SizingSplit } from "@/lib/types";
 import { chipsToBb, fmt1, fmtBb, fmtNum, fmtPct, signClass } from "@/lib/format";
-import { SizingHistogram } from "@/components/charts/sizing-histogram";
+import { SizingBreakdown } from "@/components/charts/sizing-histogram";
+import { RangeInfoPanel, RangeStrategyGrid } from "@/components/charts/range-grid";
 import { Empty, ErrorState, StatChip, TableSkeleton } from "@/components/ui";
 
 // Each stat row knows its true denominator key in `opportunities`,
@@ -64,6 +65,65 @@ function StatCell({ def, split }: { def: StatDef; split: AgentStatsSplit | undef
       {def.fmt(split)}
       <span className="ml-1.5 text-[9px] text-ink3">{denom}</span>
     </td>
+  );
+}
+
+function RangeSection({ agentId }: { agentId: string }) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const range = useApi<RangeCombo[]>(`/api/agents/${agentId}/range`);
+  const combos = useMemo(
+    () => new Map((range.data ?? []).map((c) => [c.hand, c])),
+    [range.data],
+  );
+
+  return (
+    <section className="card p-4">
+      <p className="eyebrow mb-3">preflop strategy — 13×13</p>
+      {range.isPending ? (
+        <div className="skeleton h-72 w-full" />
+      ) : range.isError ? (
+        <ErrorState message={(range.error as Error)?.message} retry={() => range.refetch()} />
+      ) : combos.size === 0 ? (
+        <Empty title="No hands for this agent yet" />
+      ) : (
+        <div
+          className="flex flex-col gap-6 lg:flex-row"
+          onMouseLeave={() => setSelected(null)}
+        >
+          <RangeStrategyGrid
+            combos={combos}
+            node="ip_first"
+            selected={selected}
+            onSelect={setSelected}
+          />
+          <RangeStrategyGrid
+            combos={combos}
+            node="oop_vs_open"
+            selected={selected}
+            onSelect={setSelected}
+          />
+          <RangeInfoPanel combos={combos} selected={selected} />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SizingSection({ agentId }: { agentId: string }) {
+  const sizing = useApi<SizingSplit[]>(`/api/agents/${agentId}/sizing`);
+  return (
+    <section className="card p-4">
+      <p className="eyebrow mb-3">bet sizing — % of pot, by street and position</p>
+      {sizing.isPending ? (
+        <div className="skeleton h-48 w-full" />
+      ) : sizing.isError ? (
+        <ErrorState message={(sizing.error as Error)?.message} retry={() => sizing.refetch()} />
+      ) : (
+        <div className="max-w-2xl">
+          <SizingBreakdown splits={sizing.data} />
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -229,15 +289,9 @@ export default function AgentDashboard({
             </div>
           </section>
 
-          <section className="card p-4">
-            <p className="eyebrow mb-3">bet sizing — % of pot</p>
-            <div className="flex flex-col gap-6 sm:flex-row">
-              {positions.map((p) => {
-                const s = byPos.get(p);
-                return <SizingHistogram key={p} data={s?.sizingHistogram ?? null} title={p} />;
-              })}
-            </div>
-          </section>
+          <RangeSection agentId={agentId} />
+
+          <SizingSection agentId={agentId} />
         </>
       )}
     </div>

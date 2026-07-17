@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { use, useMemo, useState } from "react";
+import { Suspense, use, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/api";
 import type { AgentStatsResponse, LeakRow } from "@/lib/types";
 import { fmtBb, signClass } from "@/lib/format";
@@ -43,16 +44,15 @@ function Select({
   );
 }
 
-export default function LeaksPage({
-  params,
-}: {
-  params: Promise<{ agentId: string }>;
-}) {
-  const { agentId } = use(params);
-  const [position, setPosition] = useState("");
-  const [street, setStreet] = useState("");
-  const [texture, setTexture] = useState("");
-  const [minSampleN, setMinSampleN] = useState(30);
+function LeaksView({ agentId }: { agentId: string }) {
+  // filters are seeded from the URL so other views can deep-link a spot
+  const sp = useSearchParams();
+  const [position, setPosition] = useState(sp.get("position") ?? "");
+  const [street, setStreet] = useState(sp.get("street") ?? "");
+  const [texture, setTexture] = useState(sp.get("texture") ?? "");
+  const [minSampleN, setMinSampleN] = useState(
+    Math.max(1, Number(sp.get("minSampleN")) || 30),
+  );
   const [sortKey, setSortKey] = useState<SortKey>("mirrorDeltaBb");
 
   const qs = new URLSearchParams();
@@ -210,5 +210,18 @@ export default function LeaksPage({
         </>
       )}
     </div>
+  );
+}
+
+export default function LeaksPage({
+  params,
+}: {
+  params: Promise<{ agentId: string }>;
+}) {
+  const { agentId } = use(params);
+  return (
+    <Suspense fallback={<div className="card"><TableSkeleton rows={10} /></div>}>
+      <LeaksView agentId={agentId} />
+    </Suspense>
   );
 }
