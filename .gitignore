@@ -7,3 +7,10 @@ __pycache__/
 # ETL runtime artifacts (local backfill)
 *.log
 *.pid
+
+# DB endpoint secrets (server-side; never commit)
+db/tls/*.key
+db/tls/*.crt
+db/tls/*.pem
+db/tls/*.srl
+db/pgbouncer/userlist.txt

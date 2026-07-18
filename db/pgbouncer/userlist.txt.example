@@ -1,0 +1,10 @@
+# PgBouncer SCRAM verifier list — DO NOT hand-edit, DO NOT commit the real file.
+#
+# Format: "<role>" "<SCRAM verifier exactly as Postgres stores it>"
+# The verifier is NOT the password; it's the value in pg_authid.rolpassword.
+#
+# Generate the real db/pgbouncer/userlist.txt AFTER creating the role:
+#   ./db/pgbouncer/gen-userlist.sh          # reads it out of the running arena-db
+#
+# The result looks like this (one line):
+"app_readonly" "SCRAM-SHA-256$4096:BASE64SALT==$BASE64STOREDKEY=:BASE64SERVERKEY="

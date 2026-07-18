@@ -1,11 +1,19 @@
-# Arena raw-ingestion Postgres — runs alongside the legacy `poker-db` (jh_poker).
-# LOCAL ONLY: bound to 127.0.0.1 so it is not reachable from outside the host.
-# The ETL (etl/arena_etl.py) connects over the host port via ARENA_RAW_DB_URL.
+# Arena DB stack — Postgres (private) + PgBouncer (the only public endpoint).
 #
-#   cd db && docker compose up -d
+#   Postgres    : bound to 127.0.0.1 on the host + reachable on the compose
+#                 network as `db:5432`. NOT internet-reachable. The ETL connects
+#                 over the host port (ARENA_RAW_DB_URL -> 127.0.0.1:5434).
+#   PgBouncer   : transaction-mode pooler, terminates TLS (verify-full), SCRAM
+#                 auth, published on 0.0.0.0:6432. This is what Vercel connects
+#                 to. Implements PRD_fe §5.2/§5.3.
 #
-# Password lives in db/.env (gitignored). schema.sql is applied automatically on
-# first init; the ETL also re-applies it idempotently on every run.
+#   cd db && docker compose up -d          # brings up both
+#
+# First-time server setup (role, certs, userlist, firewall, Vercel envs):
+#   see db/DEPLOY.md
+#
+# Secrets live outside git: db/.env (POSTGRES_PASSWORD), db/tls/* (certs/keys),
+# db/pgbouncer/userlist.txt (SCRAM verifier) — all gitignored.
 name: arena-db
 
 services:
@@ -19,7 +27,7 @@ services:
       POSTGRES_DB: arena
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in db/.env}
     ports:
-      # host-local only — NOT 0.0.0.0. Change to expose externally later.
+      # host-local only — NOT 0.0.0.0. Public traffic goes through pgbouncer.
       - "127.0.0.1:5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql
@@ -30,6 +38,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  pgbouncer:
+    # NOTE: pin this to a specific tag/digest in production. `latest` is used so a
+    # missing-tag typo can't block `up`; after the first `docker compose pull`,
+    # replace with the digest it prints (see db/DEPLOY.md → "Pin the image").
+    image: edoburu/pgbouncer:latest
+    container_name: arena-pgbouncer
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # THE public endpoint. TLS + SCRAM enforced by pgbouncer.ini.
+      - "0.0.0.0:6432:6432"
+    volumes:
+      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+      - ./tls:/etc/pgbouncer/tls:ro
 
 volumes:
   pgdata:
