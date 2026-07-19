@@ -174,6 +174,21 @@ def parse_ts(value) -> datetime | None:
 # DB layer
 # ---------------------------------------------------------------------------
 
+# Single-instance guard. Once a run takes longer than the timer interval,
+# systemd fires the next trigger into a still-running pipeline; without this
+# two loaders would walk the same pages against the API. Session-scoped, so a
+# crashed run releases it when its connection drops — no stale-lock cleanup.
+# arena_transform.py holds a DIFFERENT key on purpose: loader and transform are
+# safe to overlap (the transform only reads raw.*), only self-overlap is not.
+ADVISORY_LOCK = (4711, 1)  # arena_transform.py uses (4711, 2)
+
+
+def try_advisory_lock(conn, classid: int, objid: int) -> bool:
+    with conn.cursor() as cur:
+        cur.execute("SELECT pg_try_advisory_lock(%s, %s)", (classid, objid))
+        return cur.fetchone()[0]
+
+
 class Db:
     def __init__(self, dsn: str):
         self.conn = psycopg.connect(dsn)
@@ -630,6 +645,9 @@ def main(argv: list[str] | None = None) -> int:
     api = Api(cfg)
     db = Db(cfg.require_db())
     try:
+        if args.command != "status" and not try_advisory_lock(db.conn, *ADVISORY_LOCK):
+            log.warning("another arena_etl.py run holds the lock — skipping this run")
+            return 0
         db.ensure_schema()
         if args.command == "init-db":
             log.info("schema applied (raw.*)")

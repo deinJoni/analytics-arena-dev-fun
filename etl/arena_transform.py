@@ -1296,6 +1296,19 @@ class Config:
         return self.db_url
 
 
+# Single-instance guard — see the twin comment in arena_etl.py. Two concurrent
+# transforms would walk the same replays and contend on every mart rebuild.
+# Different key from the loader: loader-vs-transform overlap is safe and normal
+# (the transform only reads raw.*), transform-vs-transform is not.
+ADVISORY_LOCK = (4711, 2)  # arena_etl.py uses (4711, 1)
+
+
+def try_advisory_lock(conn, classid: int, objid: int) -> bool:
+    with conn.cursor() as cur:
+        cur.execute("SELECT pg_try_advisory_lock(%s, %s)", (classid, objid))
+        return cur.fetchone()[0]
+
+
 def ensure_schema(conn):
     path = SCRIPT_DIR / "schema_analytics.sql"
     if not path.exists():
@@ -1574,6 +1587,9 @@ def main(argv=None):
     cfg = Config(args)
     conn = psycopg.connect(cfg.require_db())
     try:
+        if args.command != "status" and not try_advisory_lock(conn, *ADVISORY_LOCK):
+            log.warning("another arena_transform.py run holds the lock — skipping this run")
+            return 0
         ensure_schema(conn)
         if args.command == "init-db":
             log.info("schema applied (stg/int/mart)")
