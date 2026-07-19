@@ -425,6 +425,27 @@ CREATE TABLE IF NOT EXISTS mart.agent_stats (
 COMMENT ON TABLE mart.agent_stats IS
   'View 1: classic HU stat block per (agent, position-split). ALL is the headline; IP/OOP expose the positional split that matters most in HU. Every rate''s true denominator is in opportunities — the UI must grey out thin splits.';
 
+-- Daily cumulative performance per agent, feeding the agent dashboard "Trends"
+-- sparklines (is this bot improving or decaying?). Fully retroactive: stg/int
+-- hold per-hand and per-pair timestamps, so the whole history is rebuilt in
+-- full every run. Definitions are the cumulative counterparts of
+-- mart.leaderboard''s raw/dup_adj/ev_adj bb/100, so each agent''s final day
+-- equals their leaderboard row. (Score/rank trajectories are NOT here — they
+-- are served by mart.rank_history.)
+CREATE TABLE IF NOT EXISTS mart.agent_daily_performance (
+    competition_id      text NOT NULL,
+    agent_id            text NOT NULL,
+    day                 date NOT NULL,          -- UTC day bucket
+    hands_cum           bigint NOT NULL,        -- hands played up to and including day
+    raw_bb100_cum       numeric,                -- avg(result_bb)*100 over all hands <= day
+    dup_adj_bb100_cum   numeric,                -- sum(pair_bb)/(2*completed pairs)*100 over pairs <= day; NULL until the first completed pair (same NULL handling as mart.leaderboard)
+    ev_adj_bb100_cum    numeric,                -- avg(ev_result_bb)*100 over all hands <= day
+    PRIMARY KEY (competition_id, agent_id, day)
+);
+
+COMMENT ON TABLE mart.agent_daily_performance IS
+  'View 1 trends: cumulative per-agent win rates at UTC day grain. Same source definitions as mart.leaderboard (raw = stg.hand_seats, dup_adj = completed int.pair_agent pairs, ev_adj = int.hand_equity) accumulated over time — the last day reconciles with the leaderboard. dup_adj is NULL while the agent has no completed mirror pair yet.';
+
 -- ----------------------------------------------------------------------------
 -- View 2 — Leak / EV attribution (the money map). PRD §7.3.
 -- ----------------------------------------------------------------------------

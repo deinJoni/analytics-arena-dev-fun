@@ -42,7 +42,8 @@ stg/int ──(SQL)──► mart.hand_header / mart.hand_step         (incremen
                    mart.leaderboard / mart.season_summary /
                    mart.hands_over_time / mart.rank_history /
                    mart.agent_stats / mart.agent_leaks /
-                   mart.matchups                              (full rebuild per run)
+                   mart.matchups / mart.agent_daily_performance
+                                                            (full rebuild per run)
 ```
 
 * **Incremental**: the walker processes `raw.replays` with
@@ -166,10 +167,27 @@ the mirror-divergence attribution. Taxonomy (v1, deliberately compact):
 | View | Tables | Notes |
 |---|---|---|
 | 0 Overview | `leaderboard`, `season_summary`, `hands_over_time`, `rank_history` | raw / dup-adj / EV-adj bb/100 side by side; **`rank` = position by `total_score` DESC** (the arena.dev.fun ordering — the API's own `rank` field is a *global* dev.fun rank across all arenas, so it is recomputed here); `trueskill_mu` = roster `totalScore` (no sigma → NULL); 7d deltas from `raw.leaderboard_history` (needs polling coverage). `rank_history` = the same position through time (per-snapshot, full board carried-forward) for the Overview drill-down. Only agents with observed hands appear. |
-| 1 Agent dashboard | `agent_stats` | grain (competition, agent, position ∈ IP/OOP/ALL). Every rate's true denominator is in `opportunities` (jsonb) — **the UI must grey thin splits**. Sizing histogram buckets: %-of-pot 0-33 / 33-66 / 66-100 / 100+. AF = (bets+raises)/calls, AFq = aggr/(aggr+calls+folds), both postflop. |
+| 1 Agent dashboard | `agent_stats`, `agent_daily_performance` | `agent_stats`: grain (competition, agent, position ∈ IP/OOP/ALL). Every rate's true denominator is in `opportunities` (jsonb) — **the UI must grey thin splits**. Sizing histogram buckets: %-of-pot 0-33 / 33-66 / 66-100 / 100+. AF = (bets+raises)/calls, AFq = aggr/(aggr+calls+folds), both postflop. `agent_daily_performance`: the "Trends" sparkline feeder — see below. |
 | 2 Leak map | `agent_leaks` | grain (competition, agent, position, street, texture, line); texture `'na'` for preflop (a PK can't hold NULL). `bb_per_100_spot`/`ev_bb_per_100_spot` = whole-hand result over hands where the agent took that line. **`mirror_delta_bb`** = avg (own result − counterpart's result on the identical deck) × 100 over deck-sides whose *first line divergence* was this spot, with `mirror_n` as its sample size. |
 | 3 Replayer | `hand_header`, `hand_step` | `mirror_hand_id` links the identical-deck partner for side-by-side diffing. Steps carry pot/stack/board from event snapshots (no re-simulation), omniscient `equity_at_decision`, parsed `reasoning_text` (63% of sample actions carry a strategy note). |
 | 4 Head-to-head | `matchups` | both directions materialized; the block *is* the matchup. `spot_deltas` = top ±3 mirror-delta spots vs that specific opponent. |
+
+**Trends mart (`mart.agent_daily_performance`)** — grain (competition, agent,
+UTC day). Cumulative `hands_cum`, `raw_bb100_cum`, `dup_adj_bb100_cum`,
+`ev_adj_bb100_cum` per agent, built from the **same source definitions as
+`mart.leaderboard`** (raw = `avg(result_bb)` over `stg.hand_seats`, dup-adj =
+`sum(pair_bb)/(2·pairs)` over *completed* `int.pair_agent` pairs, ev-adj =
+`avg(ev_result_bb)` over `int.hand_equity`), so each agent's final day equals
+their leaderboard row. `dup_adj_bb100_cum` is NULL until the first completed
+mirror pair (same NULL handling as the leaderboard: NULLIF on a zero
+denominator). Days are bucketed in UTC explicitly so the grain is stable
+across deploys. Fully retroactive (stg/int carry per-hand and per-pair
+timestamps) and rebuilt in full every run — no backfill needed. Score/rank
+trajectories are **not** here; they stay in `mart.rank_history`. Read path:
+`app_readonly` is granted SELECT on all of `mart.*` (re-applied by
+`ensure_schema` on every run, plus `ALTER DEFAULT PRIVILEGES` from
+`db/role_app_readonly.sql`), so the FE sees the table as soon as the next
+transform run creates it — until then the API degrades to an empty series.
 
 **Attribution caveat (PRD §7.3, stated honestly):** the exact luck-cancelled
 quantity is pair-level `skill_delta_bb`. Spot-level `mirror_delta_bb`

@@ -60,6 +60,15 @@ function sortedActions(actions: RangeNodeAction[]): RangeNodeAction[] {
 
 // One 13x13 grid for a single decision node. Each tile splits into colored
 // segments proportional to the action mix — the whole strategy in one look.
+//
+// Mobile: the grid is fluid (w-full), tiles touch (gap-0) so they stay ~26px at
+// 390px, and labels bump to 9px. Hover-preview only applies on hover-capable
+// pointers — on touch, the tap itself must toggle selection (a synthetic
+// mouseenter/focus before the click would otherwise instantly undo it).
+function hoverCapable(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches;
+}
+
 export function RangeStrategyGrid({
   combos,
   node,
@@ -82,7 +91,7 @@ export function RangeStrategyGrid({
         {meta.desc} · {totalOpp} decisions
       </p>
       <div
-        className="grid w-full max-w-[380px] gap-px"
+        className="grid w-full max-w-[380px] select-none gap-0 sm:gap-px"
         style={{ gridTemplateColumns: "repeat(13, minmax(0, 1fr))" }}
       >
         {RANKS.map((_, i) =>
@@ -95,15 +104,16 @@ export function RangeStrategyGrid({
             return (
               <button
                 key={label + i + "-" + j}
-                onMouseEnter={() => onSelect(label)}
-                onFocus={() => onSelect(label)}
+                onMouseEnter={() => hoverCapable() && onSelect(label)}
+                onFocus={() => hoverCapable() && onSelect(label)}
                 onClick={() => onSelect(isSel ? null : label)}
+                aria-pressed={isSel}
                 aria-label={`${label}: ${
                   opp === 0
                     ? "no decisions here"
                     : actions.map((a) => `${meta.verbs[a.action] ?? a.action} ${a.n}`).join(", ")
                 }`}
-                className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-[2px] font-mono text-[8px] leading-none ${
+                className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-[2px] font-mono text-[9px] leading-none sm:text-[8px] ${
                   opp === 0 ? "border border-line/50 text-ink3/50" : "text-ink"
                 } ${isSel ? "z-10 outline outline-1 outline-accent" : ""}`}
               >

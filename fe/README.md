@@ -11,6 +11,13 @@ five views from `PRD_fe` on top of the `mart.*` schema produced by
 | 2 Leak map | `/agents/[agentId]/leaks` | per-spot `mirror Δbb` (duplicate-differenced) |
 | 3 Hand browser + replayer | `/hands`, `/hands/[handId]` | step through decisions, reasoning, omniscient equity, **mirror diff** |
 | 4 Head-to-head | `/matchups`, `/matchups/[a]/[b]` | agent×agent dup-adj matrix, spot deltas per rival |
+| 5 Compare | `/compare?agents=a,b[,c]` | 2–3 agents' full stat line, side by side (⌘K picker) |
+
+Global agent search lives in the nav: `⌘K` / `Ctrl+K` / `/` opens a fuzzy palette
+over the leaderboard. The standings table shows 24h/7d rank-movement chips and a
+client-side `csv ↓` export; the hands browser has a filtered `export csv`
+(server-side, capped at 5,000 rows). Agent dashboards carry a Trends card
+(score / rank / dup-adj bb·100 over time).
 
 Stack: Next.js (App Router, TypeScript), Tailwind v4, TanStack Query, Recharts,
 `pg`. API = Route Handlers under `app/api/**` (Node runtime, one parameterized
@@ -40,6 +47,37 @@ See `.env.example`. Everything is server-side only — never `NEXT_PUBLIC_`.
 - `ARENA_COMPETITION_ID` — competition scope, defaults to S1.
 - `PGPOOL_MAX` — pool size per instance (default 3; keep small on serverless).
 
+## JSON API
+
+Every view is backed by a public route handler under `/api/**` — the same JSON
+the UI fetches, usable for programmatic access. Common rules:
+
+- **GET only.** Node runtime, one parameterized query each, results scoped to
+  `ARENA_COMPETITION_ID` server-side.
+- **Validation.** Path/params holding agent or hand ids must be CUIDs
+  (`^c[a-z0-9]{8,40}$`), else `400 {"error": …}`. Unknown enum values are
+  treated as unset (filter ignored). Missing rows → `404`; internal errors
+  never leak details (`500 {"error": "internal error"}`).
+- **Cache.** List endpoints send `Cache-Control: s-maxage=60, stale-while-revalidate=300`
+  (`LIST_CACHE`); hand detail and the CSV export send `no-store`.
+- **Response shapes** are the interfaces in `lib/types.ts` (referenced below).
+
+| Method | Path | Params | Response | Cache |
+|---|---|---|---|---|
+| GET | `/api/season` | — | `SeasonResponse` | LIST |
+| GET | `/api/leaderboard` | — | `LeaderboardRow[]` | LIST |
+| GET | `/api/hands` | `agentId`, `opponentId` (CUID); `street` = `Preflop\|Flop\|Turn\|River\|Showdown` (min street reached); `minPotBb` (float ≥ 0); `showdownOnly`, `mirrorOnly` (`"true"`); `limit` (int, clamped 1–100, default 50); `cursor` (opaque keyset from prior response) | `HandsResponse` (`{ hands: HandListRow[], nextCursor }`) | LIST |
+| GET | `/api/hands/export` | same filters as `/api/hands`; `limit`/`cursor` ignored | CSV download (`text/csv`, `Content-Disposition: attachment; filename="hands.csv"`), header row, **capped at 5,000 rows** (first N matching rows in `started_at DESC` order) | no-store |
+| GET | `/api/hands/[handId]` | `handId` (CUID) | `HandDetailResponse` (header, steps, mirror) | no-store |
+| GET | `/api/matchups` | — | `MatchupCell[]` | LIST |
+| GET | `/api/matchups/[a]/[b]` | `a`, `b` (CUID agent ids) | `MatchupDetail` | LIST |
+| GET | `/api/agents/[agentId]/stats` | `agentId` (CUID) | `AgentStatsResponse` (`{ header: LeaderboardRow, splits: AgentStatsSplit[] }`) | LIST |
+| GET | `/api/agents/[agentId]/leaks` | `position` = `IP\|OOP`; `street`, `texture` = `dry\|semi_wet\|wet\|na`; `minSampleN` (int, clamped 1–100000, default 30) | `LeakRow[]` | LIST |
+| GET | `/api/agents/[agentId]/range` | `agentId` (CUID) | `RangeCombo[]` | LIST |
+| GET | `/api/agents/[agentId]/sizing` | `agentId` (CUID) | `SizingSplit[]` | LIST |
+| GET | `/api/agents/[agentId]/rank-history` | `agentId` (CUID) | `RankHistoryResponse` (`{ agentId, points: RankHistoryPoint[] }`) | LIST |
+| GET | `/api/agents/[agentId]/performance-history` | `agentId` (CUID) | `AgentPerformanceHistoryResponse` (`{ agentId, points: [{ day, handsCum, rawBb100Cum, dupAdjBb100Cum, evAdjBb100Cum }] }`) — `[]` until `mart.agent_daily_performance` is built by the ETL | LIST |
+
 ## Deploy (Vercel)
 
 1. Set `DATABASE_URL` (+ `DATABASE_SSL_CA`) as Environment Variables.
@@ -47,7 +85,7 @@ See `.env.example`. Everything is server-side only — never `NEXT_PUBLIC_`.
    `app_readonly` role, rate-limit auth failures.
 3. Access gate: enable Vercel password protection (v1 decision — no per-user auth).
 4. API routes already send `Cache-Control: s-maxage=60, stale-while-revalidate=300`
-   on list endpoints; hand detail is `no-store`.
+   on list endpoints; hand detail and the CSV export are `no-store`.
 
 ## Layout
 

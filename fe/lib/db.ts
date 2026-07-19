@@ -21,13 +21,21 @@ function makePool(): Pool {
     : process.env.DATABASE_SSL === "require"
       ? { rejectUnauthorized: false }
       : undefined;
-  return new Pool({
+  const pool = new Pool({
     connectionString,
     ssl,
     max: Number(process.env.PGPOOL_MAX ?? 3),
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 10_000,
   });
+  // The remote pooler (PgBouncer) drops idle server connections. Without this
+  // handler, node-pg re-emits that as an `error` on an idle pooled client,
+  // which becomes an uncaughtException and kills the process. Logging and
+  // discarding is the documented stance — the client is removed from the pool.
+  pool.on("error", (err) => {
+    console.error("pg pool idle client error:", err.message);
+  });
+  return pool;
 }
 
 // Module-scoped pool, stashed on globalThis so dev hot-reload and warm

@@ -1,13 +1,49 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Fragment, use, useMemo, useState } from "react";
 import { useApi } from "@/lib/api";
-import type { AgentStatsResponse, AgentStatsSplit, RangeCombo, SizingSplit } from "@/lib/types";
+import type {
+  AgentStatsResponse,
+  AgentStatsSplit,
+  RangeCombo,
+  RankHistoryResponse,
+  SizingSplit,
+} from "@/lib/types";
+import type { AgentPerformanceHistoryResponse } from "@/lib/queries/agentPerformanceHistory";
 import { chipsToBb, fmt1, fmtBb, fmtNum, fmtPct, signClass } from "@/lib/format";
-import { SizingBreakdown } from "@/components/charts/sizing-histogram";
-import { RangeInfoPanel, RangeStrategyGrid } from "@/components/charts/range-grid";
+import type { SparkPoint } from "@/components/charts/stat-sparkline";
 import { Empty, ErrorState, StatChip, TableSkeleton } from "@/components/ui";
+
+// Below-the-fold heavy charts are code-split out of the initial client bundle:
+// recharts (via StatSparkline) and the 13×13 range grids stream in behind
+// skeletons matching each section's own pending state. ssr:false is allowed
+// because this page is a Client Component, and these sections could never
+// prerender anyway — they gate on client-fetched data.
+const StatSparkline = dynamic(
+  () => import("@/components/charts/stat-sparkline").then((m) => m.StatSparkline),
+  { ssr: false, loading: () => <div className="skeleton h-32 w-full" /> },
+);
+const SizingBreakdown = dynamic(
+  () => import("@/components/charts/sizing-histogram").then((m) => m.SizingBreakdown),
+  { ssr: false, loading: () => <div className="skeleton h-48 w-full" /> },
+);
+const RangeStrategyGrid = dynamic(
+  () => import("@/components/charts/range-grid").then((m) => m.RangeStrategyGrid),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-w-0 flex-1">
+        <div className="skeleton h-72 w-full max-w-[380px]" />
+      </div>
+    ),
+  },
+);
+const RangeInfoPanel = dynamic(
+  () => import("@/components/charts/range-grid").then((m) => m.RangeInfoPanel),
+  { ssr: false, loading: () => <div className="skeleton h-72 w-full lg:w-64 lg:shrink-0" /> },
+);
 
 // Each stat row knows its true denominator key in `opportunities`,
 // so thin splits grey out honestly (PRD: first-class UI state).
@@ -63,7 +99,7 @@ function StatCell({ def, split }: { def: StatDef; split: AgentStatsSplit | undef
       title={thin ? `thin sample: ${denom} opportunities` : `${denom} opportunities`}
     >
       {def.fmt(split)}
-      <span className="ml-1.5 text-[9px] text-ink3">{denom}</span>
+      <span className="ml-1 text-[8px] text-ink3 sm:ml-1.5 sm:text-[9px]">{denom}</span>
     </td>
   );
 }
@@ -77,7 +113,7 @@ function RangeSection({ agentId }: { agentId: string }) {
   );
 
   return (
-    <section className="card p-4">
+    <section className="card p-3 sm:p-4">
       <p className="eyebrow mb-3">preflop strategy — 13×13</p>
       {range.isPending ? (
         <div className="skeleton h-72 w-full" />
@@ -105,6 +141,111 @@ function RangeSection({ agentId }: { agentId: string }) {
           <RangeInfoPanel combos={combos} selected={selected} />
         </div>
       )}
+    </section>
+  );
+}
+
+// One sparkline cell of the Trends grid: eyebrow label, then skeleton /
+// error / honest-empty / chart. Fewer than 2 non-null points is the empty
+// state (same honesty rule as RankTrajectory) — a one-dot line is noise.
+function TrendCell({
+  label,
+  note,
+  pending,
+  isError,
+  data,
+  formatValue,
+  color,
+}: {
+  label: string;
+  note?: string;
+  pending: boolean;
+  isError: boolean;
+  data: SparkPoint[];
+  formatValue?: (v: number) => string;
+  color?: string;
+}) {
+  const plottable = data.filter((p) => p.v !== null).length;
+  return (
+    <div>
+      <p className="eyebrow" title={note}>
+        {label}
+      </p>
+      {pending ? (
+        <div className="skeleton mt-2 h-32 w-full" />
+      ) : isError ? (
+        <p className="py-4 text-center text-xs text-neg/80">
+          Couldn’t load {label} trend.
+        </p>
+      ) : plottable < 2 ? (
+        <p className="py-4 text-center text-xs text-ink3">
+          No {label} history yet — fills in as the pipeline runs.
+        </p>
+      ) : (
+        <StatSparkline
+          data={data}
+          label={label}
+          formatValue={formatValue}
+          color={color}
+        />
+      )}
+    </div>
+  );
+}
+
+// "Is this bot improving or decaying?" — score + rank from mart.rank_history
+// (hourly snapshots), dup-adj bb/100 from mart.agent_daily_performance (daily,
+// empty until the transform has built the mart). Each cell degrades on its own.
+function TrendsSection({ agentId }: { agentId: string }) {
+  const rankHistory = useApi<RankHistoryResponse>(
+    `/api/agents/${agentId}/rank-history`,
+  );
+  const perf = useApi<AgentPerformanceHistoryResponse>(
+    `/api/agents/${agentId}/performance-history`,
+  );
+
+  const rankPoints = rankHistory.data?.points ?? [];
+  const scoreData: SparkPoint[] = rankPoints
+    .filter((p) => p.totalScore !== null)
+    .map((p) => ({ t: p.capturedAt, v: p.totalScore }));
+  const rankData: SparkPoint[] = rankPoints
+    .filter((p) => p.rank !== null)
+    .map((p) => ({ t: p.capturedAt, v: p.rank }));
+  const dupData: SparkPoint[] = (perf.data?.points ?? []).map((p) => ({
+    t: p.day,
+    v: p.dupAdjBb100Cum,
+  }));
+
+  return (
+    <section className="card p-4">
+      <p className="eyebrow mb-3">trends</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <TrendCell
+          label="score"
+          note="ladder totalScore over time"
+          pending={rankHistory.isPending}
+          isError={rankHistory.isError}
+          data={scoreData}
+          formatValue={(v) => fmt1(v)}
+        />
+        <TrendCell
+          label="rank"
+          note="lower is better"
+          pending={rankHistory.isPending}
+          isError={rankHistory.isError}
+          data={rankData}
+          formatValue={(v) => `#${v}`}
+          color="#3987e5"
+        />
+        <TrendCell
+          label="dup-adj bb/100"
+          note="luck-cancelled win rate, cumulative by day"
+          pending={perf.isPending}
+          isError={perf.isError}
+          data={dupData}
+          formatValue={(v) => fmtBb(v)}
+        />
+      </div>
     </section>
   );
 }
@@ -216,6 +357,8 @@ export default function AgentDashboard({
         />
       </section>
 
+      <TrendsSection agentId={agentId} />
+
       {splits.length === 0 ? (
         <Empty
           title="No stat splits for this agent yet"
@@ -231,7 +374,9 @@ export default function AgentDashboard({
               </p>
             </div>
             <div className="overflow-x-auto">
-              <table className="data-table">
+              {/* Compresses below sm (tighter cells, smaller denominators) so ALL/IP/OOP
+                  fit at 390px; overflow-x stays as the fallback. */}
+              <table className="data-table max-sm:text-xs max-sm:[&_td]:px-1.5 max-sm:[&_th]:px-1.5">
                 <thead>
                   <tr>
                     <th className="left">stat</th>
@@ -240,7 +385,7 @@ export default function AgentDashboard({
                       return (
                         <th key={p}>
                           {p}
-                          <span className="ml-1.5 font-normal normal-case tracking-normal text-ink3">
+                          <span className="ml-1 font-normal normal-case tracking-normal text-ink3 sm:ml-1.5">
                             {s ? `${s.sampleN}h` : "0h"}
                           </span>
                         </th>

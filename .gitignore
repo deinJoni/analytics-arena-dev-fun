@@ -14,3 +14,4 @@ db/tls/*.crt
 db/tls/*.pem
 db/tls/*.srl
 db/pgbouncer/userlist.txt
+.gstack/

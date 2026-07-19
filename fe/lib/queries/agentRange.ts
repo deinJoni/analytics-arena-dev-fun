@@ -62,12 +62,18 @@ export async function getAgentRangeStrategy(agentId: string): Promise<RangeCombo
     q<ActionDbRow>(
       `WITH ${MINE_AND_PARSED},
        pf AS (
+         -- Filter to the target agent's hands BEFORE the window runs. The
+         -- window is PARTITION BY hand_id, so dropping whole partitions cannot
+         -- change raises_before for retained hands. Keep both actors' rows
+         -- (opponent raises still count in raises_before); actor filter stays
+         -- after the join below. The PK (hand_id, sequence) serves the IN probe.
          SELECT hand_id, sequence, action, actor_agent_id,
                 count(*) FILTER (WHERE action = 'raise')
                   OVER (PARTITION BY hand_id ORDER BY sequence
                         ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS raises_before
            FROM mart.hand_step
           WHERE street = 'Preflop'
+            AND hand_id IN (SELECT hand_id FROM mine)
        ),
        acts AS (
          SELECT p.hand, p.result_bb, f.action,

@@ -42,6 +42,8 @@ export interface LeaderboardRow {
   evAdjBbPer100: number | null;
   netChips: number | null;
   rankDelta7d: number | null;
+  rankDelta24h: number | null;
+  muDelta7d: number | null;
   lastUpdated: string;
 }
 

@@ -1136,6 +1136,65 @@ SELECT %(cid)s, agent_id, captured_at, total_score,
 FROM asof
 """
 
+# Agent dashboard "Trends": cumulative raw/dup-adj/ev-adj bb/100 per agent per
+# UTC day. Same source definitions as LEADERBOARD_SQL (raw = avg(result_bb)
+# over stg.hand_seats; dup-adj = sum(pair_bb)/(2*completed pairs) over
+# int.pair_agent; ev-adj = avg(ev_result_bb) over int.hand_equity), accumulated
+# day by day, so each agent's final day reconciles with mart.leaderboard.
+# Days are bucketed in UTC explicitly (not the session zone) so the grain is
+# stable across deploys. dup-adj stays NULL until the first completed pair —
+# the same NULL handling as the leaderboard (NULLIF on a zero denominator).
+# Full rebuild per run; trivial at current scale.
+AGENT_DAILY_PERFORMANCE_SQL = """
+WITH hand_days AS (
+    SELECT s.agent_id, (h.started_at AT TIME ZONE 'UTC')::date AS day,
+           count(*) AS hands, sum(s.result_bb) AS sum_bb
+    FROM stg.hands h
+    JOIN stg.hand_seats s USING (hand_id)
+    WHERE h.competition_id = %(cid)s
+    GROUP BY 1, 2
+),
+pair_days AS (
+    SELECT agent_id, (started_at AT TIME ZONE 'UTC')::date AS day,
+           count(*) FILTER (WHERE is_complete) AS pairs,
+           sum(pair_bb) FILTER (WHERE is_complete) AS sum_pair_bb
+    FROM int.pair_agent
+    WHERE competition_id = %(cid)s
+    GROUP BY 1, 2
+),
+ev_days AS (
+    SELECT e.agent_id, (h.started_at AT TIME ZONE 'UTC')::date AS day,
+           count(*) AS n, sum(e.ev_result_bb) AS sum_ev_bb
+    FROM int.hand_equity e
+    JOIN stg.hands h USING (hand_id)
+    WHERE h.competition_id = %(cid)s
+    GROUP BY 1, 2
+),
+spine AS (
+    SELECT agent_id, day FROM hand_days
+    UNION
+    SELECT agent_id, day FROM pair_days
+    UNION
+    SELECT agent_id, day FROM ev_days
+)
+INSERT INTO mart.agent_daily_performance (competition_id, agent_id, day,
+    hands_cum, raw_bb100_cum, dup_adj_bb100_cum, ev_adj_bb100_cum)
+SELECT %(cid)s, s.agent_id, s.day,
+       (sum(COALESCE(hd.hands, 0)) OVER w)::bigint,
+       round(sum(COALESCE(hd.sum_bb, 0)) OVER w
+             / NULLIF(sum(COALESCE(hd.hands, 0)) OVER w, 0) * 100, 2),
+       round(sum(COALESCE(pd.sum_pair_bb, 0)) OVER w
+             / NULLIF(2 * sum(COALESCE(pd.pairs, 0)) OVER w, 0) * 100, 2),
+       round(sum(COALESCE(ed.sum_ev_bb, 0)) OVER w
+             / NULLIF(sum(COALESCE(ed.n, 0)) OVER w, 0) * 100, 2)
+FROM spine s
+LEFT JOIN hand_days hd ON hd.agent_id = s.agent_id AND hd.day = s.day
+LEFT JOIN pair_days pd ON pd.agent_id = s.agent_id AND pd.day = s.day
+LEFT JOIN ev_days   ed ON ed.agent_id = s.agent_id AND ed.day = s.day
+WINDOW w AS (PARTITION BY s.agent_id ORDER BY s.day)
+ORDER BY s.agent_id, s.day
+"""
+
 # Marts rebuilt in full per competition each run (small at this scale);
 # hand_header/hand_step are the incremental exceptions above.
 MART_REBUILDS = [
@@ -1146,6 +1205,7 @@ MART_REBUILDS = [
     ("mart.season_summary", SEASON_SUMMARY_SQL),
     ("mart.hands_over_time", HANDS_OVER_TIME_SQL),
     ("mart.rank_history", RANK_HISTORY_SQL),
+    ("mart.agent_daily_performance", AGENT_DAILY_PERFORMANCE_SQL),
 ]
 
 # ---------------------------------------------------------------------------
@@ -1380,6 +1440,7 @@ TRUNCATE_TABLES = [
     "mart.hand_header", "mart.hand_step", "mart.leaderboard",
     "mart.agent_stats", "mart.agent_leaks", "mart.matchups",
     "mart.season_summary", "mart.hands_over_time", "mart.rank_history",
+    "mart.agent_daily_performance",
 ]
 
 
@@ -1413,7 +1474,8 @@ def print_status(conn):
               "int.hand_features", "int.hand_street_lines", "int.equity_cache",
               "mart.leaderboard", "mart.agent_stats", "mart.agent_leaks",
               "mart.hand_header", "mart.hand_step", "mart.matchups",
-              "mart.season_summary", "mart.hands_over_time", "mart.rank_history"]
+              "mart.season_summary", "mart.hands_over_time", "mart.rank_history",
+              "mart.agent_daily_performance"]
     with conn.cursor() as cur:
         print(f"{'table':<28} {'rows':>10}")
         for t in tables:

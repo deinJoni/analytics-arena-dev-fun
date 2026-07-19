@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { fetchJson, useApi } from "@/lib/api";
 import type { HandsResponse, LeaderboardRow } from "@/lib/types";
 import { chipsToBb, fmtBb, fmtTime, signClass } from "@/lib/format";
@@ -80,6 +81,11 @@ function HandsBrowser() {
   apiQs.set("limit", "50");
   const baseQs = apiQs.toString();
 
+  // CSV export of the same filtered result set (server caps at 5,000 rows).
+  const exportQs = new URLSearchParams(apiQs);
+  exportQs.delete("limit");
+  const exportHref = `/api/hands/export?${exportQs.toString()}`;
+
   const hands = useInfiniteQuery({
     queryKey: ["hands", baseQs],
     queryFn: ({ pageParam }) =>
@@ -91,6 +97,48 @@ function HandsBrowser() {
   });
 
   const allRows = hands.data?.pages.flatMap((p) => p.hands) ?? [];
+
+  // Windowing: thousands of rows can accumulate via "load more", so only the
+  // visible slice (+overscan) is in the DOM. Rows stay plain <tr> in native
+  // table layout — top/bottom spacer rows supply the missing height — so the
+  // .data-table look (auto column sizing, borders, hover, nowrap) and the
+  // responsive column-hiding classes are untouched. Rows are uniform height
+  // (22px card + 7px+7px padding + 1px border = 37px); measureElement keeps
+  // the estimate honest.
+  const tbodyRef = useRef<HTMLTableSectionElement | null>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+  const rowVirtualizer = useWindowVirtualizer<HTMLTableRowElement>({
+    count: allRows.length,
+    estimateSize: () => 37,
+    overscan: 10,
+    scrollMargin,
+  });
+
+  const showTable = !hands.isPending && !hands.isError && allRows.length > 0;
+
+  // The list scrolls with the window, so the virtualizer needs the tbody's
+  // document offset as its scrollMargin. Re-measured whenever the table
+  // (re)mounts — a filter change swaps it for the skeleton and back — and on
+  // resize, since the wrapping filter bar can move the table.
+  useEffect(() => {
+    if (!showTable) return;
+    const el = tbodyRef.current;
+    if (!el) return;
+    const update = () => {
+      const next = el.getBoundingClientRect().top + window.scrollY;
+      setScrollMargin((prev) => (Math.abs(prev - next) > 0.5 ? next : prev));
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [showTable]);
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const padTop = virtualRows.length > 0 ? virtualRows[0].start - scrollMargin : 0;
+  const padBottom =
+    virtualRows.length > 0
+      ? rowVirtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1].end - scrollMargin)
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -168,6 +216,14 @@ function HandsBrowser() {
             clear filters
           </button>
         )}
+        <a
+          href={exportHref}
+          download
+          title="Download hands matching the active filters as CSV (capped at 5,000 rows)"
+          className="rounded border border-line bg-surface2 px-3 py-1.5 text-xs text-ink hover:border-accent"
+        >
+          export csv
+        </a>
       </section>
 
       {hands.isPending ? (
@@ -179,7 +235,9 @@ function HandsBrowser() {
       ) : (
         <section className="card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="data-table">
+            {/* Below sm the board/reached/mirror columns hide so the two seats stay
+                readable; overflow-x remains the fallback. Structure untouched. */}
+            <table className="data-table max-sm:text-xs max-sm:[&_td]:px-1.5 max-sm:[&_th]:px-1.5">
               <thead>
                 <tr>
                   <th className="left">time</th>
@@ -187,16 +245,23 @@ function HandsBrowser() {
                   <th></th>
                   <th className="left">seat 2</th>
                   <th></th>
-                  <th className="left">board</th>
+                  <th className="left hidden sm:table-cell">board</th>
                   <th>pot bb</th>
-                  <th className="left">reached</th>
-                  <th className="left">mirror</th>
+                  <th className="left hidden sm:table-cell">reached</th>
+                  <th className="left hidden sm:table-cell">mirror</th>
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
-                {allRows.map((h) => (
-                  <tr key={h.handId}>
+              <tbody ref={tbodyRef}>
+                {padTop > 0 && (
+                  <tr aria-hidden="true">
+                    <td colSpan={10} style={{ height: padTop, padding: 0, border: "none" }} />
+                  </tr>
+                )}
+                {virtualRows.map((vr) => {
+                  const h = allRows[vr.index];
+                  return (
+                  <tr key={h.handId} data-index={vr.index} ref={rowVirtualizer.measureElement}>
                     <td className="left font-mono text-[11px] text-ink3">{fmtTime(h.startedAt)}</td>
                     <td className="left">
                       <span className={h.winnerAgentId === h.agent1Id ? "text-ink" : "text-ink2"}>
@@ -216,14 +281,14 @@ function HandsBrowser() {
                     <td className={`num text-xs ${signClass(h.agent2ResultBb)}`}>
                       {fmtBb(h.agent2ResultBb, 0)}
                     </td>
-                    <td className="left">
+                    <td className="left hidden sm:table-cell">
                       <CardRow cards={h.boardCards} placeholders={5} />
                     </td>
                     <td className="num">
                       {h.finalPotChips === null ? "—" : chipsToBb(h.finalPotChips).toFixed(0)}
                     </td>
-                    <td className="left font-mono text-[11px] text-ink3">{h.streetReached}</td>
-                    <td className="left">
+                    <td className="left hidden font-mono text-[11px] text-ink3 sm:table-cell">{h.streetReached}</td>
+                    <td className="left hidden sm:table-cell">
                       {h.mirrorHandId ? (
                         <span className="font-mono text-[11px] text-accent" title="mirror hand ingested">
                           ⧉
@@ -241,7 +306,13 @@ function HandsBrowser() {
                       </Link>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
+                {padBottom > 0 && (
+                  <tr aria-hidden="true">
+                    <td colSpan={10} style={{ height: padBottom, padding: 0, border: "none" }} />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
